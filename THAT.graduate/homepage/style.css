@@ -1,0 +1,49 @@
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    left: 1195px;
+top: 16px;
+height: Hug(35px);
+width: Hug (193.51px);
+}
+
+.page{
+     min-height: calc(100vh - 72px - 40px);
+         background: #F5F7F5;
+}
+.hero {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color:#333333;
+}
+
+.hero p {
+    font-size: 15px;
+    color: #4A5565;
+}
+.main-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #D6DFE9;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+    padding: 10px 0;
+}
+.form-footer {
+    display: flex;
+    justify-content: center; 
+    margin-top: 8px;
+    margin-bottom: 16px;
+    text-align: center;
+}
