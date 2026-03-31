@@ -1,0 +1,291 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Cairo", sans-serif;
+}
+
+body {
+  background: #f0f4f8;
+}
+
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: white;
+  position: fixed;
+  right: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #eee;
+  transition: 0.3s;
+  z-index: 200;
+}
+.nav-title {
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.logo { padding: 25px; text-align: center; }
+.logo img { height: 40px; }
+
+.user {
+  text-align: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.user span { font-weight: 600; color: #333; }
+
+.sidebar ul { list-style: none; padding: 10px; flex: 1; }
+.sidebar li { margin-bottom: 5px; }
+
+.sidebar li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #555;
+  transition: 0.2s;
+}
+
+.sidebar li a:hover {
+  background: rgba(32,164,169,0.15);
+  border-right: 4px solid #20a4a9;
+  color: #20a4a9;
+}
+
+.logout {
+  padding: 15px;
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.navbar {
+  height: 65px;
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  border-bottom: 1px solid #eee;
+  z-index: 100;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.nav-title { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+
+.menu-btn { display: none; font-size: 22px; cursor: pointer; }
+
+.main {
+  margin-right: 260px;
+  padding: 85px 40px 70px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.booking-section {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  width: 100%;
+  max-width: 1000px;
+  height: 600px;
+}
+
+
+.booking-form {
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: white;
+  overflow-y: auto;
+}
+
+.booking-form h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #20a4a9;
+}
+
+.booking-form label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #444;
+  margin-top: 12px;
+}
+
+.booking-form input,
+.booking-form select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  font-size: 14px;
+  font-family: "Cairo", sans-serif;
+  background: #f9fafb;
+  transition: 0.2s;
+  color: #333;
+}
+
+.booking-form input:focus,
+.booking-form select:focus {
+  outline: none;
+  border-color: #20a4a9;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(32,164,169,0.1);
+}
+
+.error-msg {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+#confirmBooking {
+  background: linear-gradient(135deg, #20a4a9, #178a8f);
+  border: none;
+  color: white;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: "Cairo", sans-serif;
+  font-weight: 700;
+  margin-top: 18px;
+  transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(32,164,169,0.3);
+}
+
+#confirmBooking:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(32,164,169,0.4);
+}
+
+.success-msg {
+  background: #e8f8f5;
+  border: 1px solid #20a4a9;
+  border-radius: 10px;
+  padding: 12px;
+  color: #1a7a6e;
+  font-size: 13px;
+  line-height: 1.9;
+  margin-top: 10px;
+  display: none;
+}
+
+
+.doctor-card {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.doctor-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.doctor-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.95) 45%, transparent 100%);
+  padding: 28px 22px;
+  color: white;
+}
+
+.doctor-overlay h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 8px;
+}
+
+.doctor-overlay .info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 7px 0;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 1;
+}
+
+.doctor-overlay .info-row i {
+  color: #7ef0f0;
+  font-size: 13px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.doctor-overlay .price-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid rgba(255,255,255,0.4);
+}
+
+.doctor-overlay .price-tag {
+  background: rgba(32,164,169,0.4);
+  border: 1px solid rgba(32,164,169,0.6);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.doctor-overlay a {
+  color: #20a4a9;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 260px;
+  background: white;
+  text-align: center;
+  padding: 12px;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .sidebar { right: -260px; }
+  .sidebar.active { right: 0; }
+  .navbar, footer { right: 0; }
+  .main { margin-right: 0; padding: 85px 16px 70px; align-items: flex-start; }
+  .booking-section { grid-template-columns: 1fr; height: auto; }
+  .doctor-card { height: 380px; }
+  .menu-btn { display: block; }
+}
