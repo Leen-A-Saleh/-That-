@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>طلبات المواعيد</title>
+ <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+    
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+        <link rel="stylesheet" href="../therapist.css">
+  <link rel="stylesheet" href="style.css">
+   <link rel="stylesheet" href="../total.css" />
+</head>
+<body>
+
+<div class="app">
+
+ 
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="../homepage/index.html">
+                        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+                    </a>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+            <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link active">
+             <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link ">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>
+
+
+
+
+  <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link  ">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+        
+        <li>
+          <a href="../therapist-bell-page/therapist-bell.html" class="nav-link ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    
+<div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+            </button>
+        </div>
+
+  
+  </aside>
+
+  
+  <main class="main">
+
+     <header class="main-header">
+      <h1 class="page-title">طلبات المواعيد </h1>
+      <button class="status-btn">
+        <span class="status-dot"></span>
+        متصل
+      </button>
+    </header>  
+    <section class="requests-wrapper dash-card">
+      
+      <section class="cases-summary">
+  <div class="cases-summary-info">
+    <div class="summary-title">طلبات المواعيد </div>
+    <div class="summary-count">4 طلب في الانتظار</div>
+  </div>
+
+  <button id="urgentToggle" class="urgent-pill active">
+    <span class="urgent-count">1</span>
+    <span> طلب عاجل   </span>
+  </button>
+</section>
+
+      <div class="requests-list">    
+        <article class="request-card-mid" data-urgent="true" data-status="pending">
+          <header class="request-header">           
+            <div class="request-main">
+              <div class="request-person">
+                <div class="avatar-circle">م</div>
+                <div>
+                  <div class="request-name">محمد سالم</div>
+                  <div class="request-type">32 سنة</div>
+                </div>
+                 <button class="patient-type">مريض جديد</button>
+                 <span class="severity-badge  severity-medium ">متوسطة</span>
+              </div>
+            </div>
+          </header>
+          <div class="request-info-row">
+            <div class="info-block">
+              <div class="info-label" > <i class="fa-solid fa-calendar-days" style="color: #30B7C4;"></i> التاريخ المفضل </div>
+              <div class="info-value">2025-02-28</div>
+            </div>
+            <div class="info-block">
+              <div class="info-label" > <i class="fa-slab-press fa-regular fa-clock" style="color:#30B7C4"></i>  الوقت المفضل   </div>
+              <div class="info-value">10:00 صباحاً</div>
+            </div>
+          </div>
+           <div class="info-block">
+              <div class="info-label">نوع الجلسة</div>
+              <div class="info-value"> جلسة استشارية</div>
+            </div>
+          <div class="info-block">
+            <div class="info-label"> سبب الطلب</div>
+            <div class="info-value">
+يعاني من قلق مستمر وصعوبة في التركيز في العمل            </div>
+          </div>
+<div class="request-meta">
+         ⓘ تاريخ الطلب: 20-05-2023 • الساعة 05:40 مساءً    
+        </div>
+          <footer class="request-footer">
+            <button class="btn-primary btn-accept">قبول الطلب</button>
+          <button class="btn-outline btn-reject">رفض الطلب</button>
+          </footer>
+        </article>
+
+
+        
+        <article class="request-card " data-urgent="false" data-status="pending">
+          <header class="request-header">           
+            <div class="request-main">
+              <div class="request-person">
+                <div class="avatar-circle">ر</div>
+                <div>
+                  <div class="request-name"> ريم عبد الله</div>
+                  <div class="request-type">28 سنة</div>
+                </div>
+                 
+                 <span class="severity-badge  severity-low ">عادي</span>
+              </div>
+            </div>
+          </header>
+          <div class="request-info-row">
+            <div class="info-block">
+              <div class="info-label" >  <i class="fa-solid fa-calendar-days" style="color: #30B7C4;"></i>التاريخ المفضل   </div>
+              <div class="info-value">2025-02-27</div>
+            </div>
+            <div class="info-block">
+             <div class="info-label" > <i class="fa-slab-press fa-regular fa-clock" style="color:#30B7C4"></i>  الوقت المفضل   </div>
+              <div class="info-value">02:00 مساءً</div>
+            </div>
+          </div>
+           <div class="info-block">
+              <div class="info-label">نوع الجلسة</div>
+              <div class="info-value"> جلسة متابعة</div>
+            </div>
+          <div class="info-block">
+            <div class="info-label"> سبب الطلب</div>
+            <div class="info-value">
+              متابعة للجلسة السابقة تحسين ملحوظ لكن بحاجة لمراجعة خطة العلاج
+           </div>
+          </div>
+<div class="request-meta">
+         ⓘ تم ارسال 25-02-2025   
+        </div>
+          <footer class="request-footer">
+            <button class="btn-primary btn-accept">قبول الطلب</button>
+          <button class="btn-outline btn-reject">رفض الطلب</button>
+          </footer>
+        </article>
+
+      
+       <article class="request-card-urgent " data-urgent="false" data-status="pending">
+          <header class="request-header">           
+            <div class="request-main">
+              <div class="request-person">
+                <div class="avatar-circle">ع</div>
+                <div>
+                  <div class="request-name"> عبد الله يوسف</div>
+                  <div class="request-type">45 سنة</div>
+                </div>
+                 <button class="patient-type">مريض جديد</button>
+                 <span class="severity-badge  severity-high  ">عاجل</span>
+              </div>
+            </div>
+          </header>
+          <div class="request-info-row">
+           <div class="info-block">
+  
+  <div class="info-label" ><i class="fa-solid fa-calendar-days" style="color: #30B7C4;"></i>   التاريخ المفضل </div>
+  <div class="info-value">2025-02-26</div>
+</div>
+            <div class="info-block">
+             <div class="info-label" > <i class="fa-slab-press fa-regular fa-clock" style="color:#30B7C4"></i>  الوقت المفضل   </div>
+              <div class="info-value">05:00 مساءً</div>
+            </div>
+          </div>
+           <div class="info-block">
+              <div class="info-label">نوع الجلسة</div>
+              <div class="info-value"> جلسة طارئة</div>
+            </div>
+          <div class="info-block">
+            <div class="info-label"> سبب الطلب</div>
+            <div class="info-value">
+              ازمة قلق حادة تحتاج دعم عاجل
+           </div>
+          </div>
+<div class="request-meta">
+         ⓘ تم ارسال 24-2-2025 11:40      
+        </div>
+          <footer class="request-footer">
+            <button class="btn-primary btn-accept">قبول الطلب</button>
+          <button class="btn-outline btn-reject">رفض الطلب</button>
+          </footer>
+        </article>
+
+
+        <!-- طلب 4 -->
+       <article class="request-card " data-urgent="false" data-status="pending">
+          <header class="request-header">           
+            <div class="request-main">
+              <div class="request-person">
+                <div class="avatar-circle">ل</div>
+                <div>
+                  <div class="request-name"> لينا محمد</div>
+                  <div class="request-type">24 سنة</div>
+                </div>
+                 <button class="patient-type">مريض جديد</button>
+                 <span class="severity-badge  severity-low ">عادي</span>
+              </div>
+            </div>
+          </header>
+          <div class="request-info-row">
+            <div class="info-block">
+              <div class="info-label" > <i class="fa-solid fa-calendar-days" style="color: #30B7C4;"></i>  التاريخ المفضل    </div>
+              <div class="info-value">2025-03-01</div>
+            </div>
+            <div class="info-block">
+              <div class="info-label" > <i class="fa-slab-press fa-regular fa-clock" style="color:#30B7C4"></i>  الوقت المفضل   </div>
+              <div class="info-value">11:00 صباحاً</div>
+            </div>
+          </div>
+           <div class="info-block">
+              <div class="info-label">نوع الجلسة</div>
+              <div class="info-value"> جلسة استشارية</div>
+            </div>
+          <div class="info-block">
+            <div class="info-label"> سبب الطلب</div>
+            <div class="info-value">
+              مشاكل في العلاقات الاجتماعية واالثقة بالنفس
+        </div>
+          </div>
+<div class="request-meta">
+         ⓘ تاريخ الطلب: 24-02-2023 • الساعة 09:40 مساءً    
+        </div>
+          <footer class="request-footer">
+            <button class="btn-primary btn-accept">قبول الطلب</button>
+          <button class="btn-outline btn-reject">رفض الطلب</button>
+          </footer>
+        </article>
+
+      </div>
+
+    </section>
+   
+<footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+
+  </main>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

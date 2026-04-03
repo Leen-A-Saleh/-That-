@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مواعيدي - ذات للاستشارات النفسية</title>
+ <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <link rel="stylesheet" href="..//therapist.css">
+  <link rel="stylesheet" href="style.css">
+   <link rel="stylesheet" href="../total.css" />
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+       <div class="app-title">
+                <div class="title-text">
+                    <a href="../homepage/index.html">
+                        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+            <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link">
+           <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link active">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>
+
+
+
+  <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link  ">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+        
+        <li>
+          <a href="../therapist-bell-page/therapist-bell.html" class="nav-link ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+      <div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+            </button>
+        </div>
+  </aside>
+  <main class="main">
+    <header class="main-header">
+      <h1 class="page-title">  مواعيدي</h1>
+      <button class="status-btn">
+        <span class="status-dot"></span>
+        متصل
+      </button>
+    </header>  
+    <!-- عنوان الصفحة -->
+    <section class="appts-top-bar dash-card">
+      <div class="appts-top-left">
+        <div class="date-label"> مواعيدي </div>
+        <div class="date-sub"> 5 موعد في 27-02-2025</div>
+      </div>
+
+      <div class="appts-top-right">
+        <div class="date-input">
+          <input type="date" id="datePicker" value="2025-02-27">
+        </div>
+
+        <div class="day-filters">
+           <button class="day-pill active" data-filter="today">يومي</button>
+       
+          <button class="day-pill" data-filter="tomorrow">اسبوعي</button>
+          </div>
+        
+      </div>
+    </section>
+    <section class="appts-summary-card dash-card">
+      <div class="appts-stats-row">
+        <div class="appts-stat">
+          <div class="stat-label">إجمالي المواعيد</div>
+          <div class="stat-value">5</div>
+        </div>
+        <div class="appts-statt">
+          <div class="stat-label">مواعيد مؤكدة</div>
+          <div class="stat-value">4</div>
+        </div>
+        <div class="appts-stattt">
+          <div class="stat-label">في الانتظار </div>
+          <div class="stat-value">1</div>
+        </div>
+      </div>
+    </section>
+   <div class="appointments-list">
+  <!-- أحمد محمد - اليوم -->
+  <article class="appointment-card status-confirmed" data-day="today">
+  <header class="request-header">
+    <div class="request-main">
+      <div class="request-person">
+        <div class="avatar-circle">أ</div>
+        <div>
+          <div class="request-name">أحمد محمد</div>
+          <div class="request-type">28 سنة</div>
+        </div>
+        <span class="severity-badge severity-green">مؤكد</span>
+      </div>
+    </div>
+  </header>
+  <!-- الصف الوحيد: 3 أعمدة -->
+  <div class="request-info-row">
+    <!-- العمود اليمين: الوقت + نوع الجلسة -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-regular fa-clock" style="color:#30B7C4;"></i>
+      <span class="info-label">الوقت</span>
+      </div>
+      <div class="info-value">10:00 صباحاً</div>
+      <div class="info-label">نوع الجلسة</div>
+      <div class="info-value">جلسة متابعة</div>
+    </div>
+    <!-- العمود الوسط: نوع الاجتماع + الملاحظات -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-solid fa-video" style="color:#30B7C4;"></i>
+      <span class="info-label">نوع الاجتماع</span>
+      </div>
+      <div class="info-value">مكالمة فيديو</div>
+
+      <div class="info-label">ملاحظات</div>
+      <div class="info-value">
+        مراجعة التقدم في تقنيات الاسترخاء
+      </div>
+    </div>
+    <!-- العمود اليسار: المدة فقط -->
+    <div class="info-block">
+  <div class="info-head">
+    <i class="fa-solid fa-calendar-days" style="color:#30B7C4;"></i>
+    <span class="info-label">المدة</span>
+  </div>
+  <div class="info-value">50 دقيقة</div>
+</div>
+  </div>
+  <footer class="request-footer">
+   <button class="btn-primary btn-accept">   <i class="fa-solid fa-video" style="color:#ffff;"></i>  انضم للجلسة     </button>
+   <button class="btn-outline btn-reject">عرض التفاصيل</button>
+  </footer>
+  </article>
+      <!-- فاطمة علي - اليوم -->
+      <article class="appointment-card status-confirmed" data-day="today">
+        <header class="appointment-header">
+          <div class="request-main">
+      <div class="request-person">
+        <div class="avatar-circle">ف</div>
+        <div>
+          <div class="request-name"> فاطمة علي</div>
+          <div class="request-type">34 سنة</div>
+        </div>
+        <span class="severity-badge severity-green">مؤكد</span>
+      </div>
+    </div>
+  </header>
+
+        <div class="request-info-row">
+    <!-- العمود اليمين: الوقت + نوع الجلسة -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-regular fa-clock" style="color:#30B7C4;"></i>
+      <span class="info-label">الوقت</span>
+      </div>
+      <div class="info-value">11:30 صباحاً</div>
+
+      <div class="info-label">نوع الجلسة</div>
+      <div class="info-value">جلسة أولى</div>
+    </div>
+    <!-- العمود الوسط: نوع الاجتماع + الملاحظات -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-solid fa-video" style="color:#30B7C4;"></i>
+      <span class="info-label">نوع الاجتماع</span>
+      </div>
+      <div class="info-value">مكالمة فيديو</div>
+
+      <div class="info-label">ملاحظات</div>
+      <div class="info-value">
+            جلسة تقييم أولية
+      </div>
+    </div>
+     <!-- العمود اليسار: المدة فقط -->
+    <div class="info-block">
+  <div class="info-head">
+    <i class="fa-solid fa-calendar-days" style="color:#30B7C4;"></i>
+    <span class="info-label">المدة</span>
+  </div>
+  <div class="info-value">50 دقيقة</div>
+</div>
+
+  </div>
+
+  <footer class="request-footer">
+   <button class="btn-primary btn-accept">   <i class="fa-solid fa-video" style="color:#ffff;"></i>  انضم للجلسة     </button>
+   <button class="btn-outline btn-reject">عرض التفاصيل</button>
+  </footer>
+  </article>
+      <!-- خالد يوسف - اليوم / بانتظار التأكيد -->
+        <article class="appointment-card status-confirmed" data-day="today">
+        <header class="appointment-header">
+          <div class="request-main">
+      <div class="request-person">
+        <div class="avatar-circle">ح</div>
+        <div>
+          <div class="request-name"> خالد يوسف </div>
+          <div class="request-type">42 سنة</div>
+        </div>
+        <span class="severity-badge severity-orange">قيد الانتظار</span>
+      </div>
+    </div>
+  </header>
+
+        <div class="request-info-row">
+    <!-- العمود اليمين: الوقت + نوع الجلسة -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-regular fa-clock" style="color:#30B7C4;"></i>
+      <span class="info-label">الوقت</span>
+      </div>
+      <div class="info-value">02:00 مساءً</div>
+
+      <div class="info-label">نوع الجلسة</div>
+      <div class="info-value">جلسة متابعة</div>
+    </div>
+    <!-- العمود الوسط: نوع الاجتماع + الملاحظات -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-duotone fa-solid fa-phone" style="color:#30B7C4;"></i>
+      <span class="info-label">نوع الاجتماع</span>
+      </div>
+      <div class="info-value">مكالمة صوتية</div>
+      <div class="info-label">ملاحظات</div>
+      <div class="info-value">
+متابعة اضطرابات النوم
+      </div>
+    </div>
+     <!-- العمود اليسار: المدة فقط -->
+    <div class="info-block">
+  <div class="info-head">
+    <i class="fa-solid fa-calendar-days" style="color:#30B7C4;"></i>
+    <span class="info-label">المدة</span>
+  </div>
+  <div class="info-value">50 دقيقة</div>
+</div>
+  </div>
+  <footer class="request-footer">
+    <button class="btn-primary btn-accept">   <i class="fa-duotone fa-solid fa-phone" style="color: #FFFFFF;"></i>  بدء المكالمة  </button>
+   <button class="btn-outline btn-reject">عرض التفاصيل</button>
+  </footer>
+  </article>
+      <!-- نورة سعيد - اليوم -->
+       <article class="appointment-card status-confirmed" data-day="today">
+        <header class="appointment-header">
+          <div class="request-main">
+      <div class="request-person">
+        <div class="avatar-circle">ن</div>
+        <div>
+          <div class="request-name"> نورة سعيد </div>
+          <div class="request-type">25 سنة</div>
+        </div>
+        <span class="severity-badge severity-green">مؤكد</span>
+      </div>
+    </div>
+  </header>
+
+        <div class="request-info-row">
+    <!-- العمود اليمين: الوقت + نوع الجلسة -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-regular fa-clock" style="color:#30B7C4;"></i>
+      <span class="info-label">الوقت</span>
+      </div>
+      <div class="info-value">03:00 مساءً</div>
+
+      <div class="info-label">نوع الجلسة</div>
+      <div class="info-value">جلسة استشارية</div>
+    </div>
+    <!-- العمود الوسط: نوع الاجتماع + الملاحظات -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-solid fa-video" style="color:#30B7C4;"></i>
+      <span class="info-label">نوع الاجتماع</span>
+      </div>
+      <div class="info-value">مكالمة فيديو</div>
+
+      <div class="info-label">ملاحظات</div>
+      <div class="info-value">
+              استشترة حول اضطرابات الأكل
+      </div>
+    </div>
+     <!-- العمود اليسار: المدة فقط -->
+    <div class="info-block">
+  <div class="info-head">
+    <i class="fa-solid fa-calendar-days" style="color:#30B7C4;"></i>
+    <span class="info-label">المدة</span>
+  </div>
+  <div class="info-value">50 دقيقة</div>
+</div>
+
+  </div>
+
+  <footer class="request-footer">
+    <button class="btn-primary btn-accept">   <i class="fa-solid fa-video" style="color:#ffff;"></i>  انضم للجلسة     </button>
+   <button class="btn-outline btn-reject">عرض التفاصيل</button>
+  </footer>
+  </article>
+      <!-- عمر حسن - الغد -->
+       <article class="appointment-card status-confirmed" data-day="today">
+        <header class="appointment-header">
+          <div class="request-main">
+      <div class="request-person">
+        <div class="avatar-circle">ع</div>
+        <div>
+          <div class="request-name">  عمر حسن</div>
+          <div class="request-type">31 سنة</div>
+        </div>
+        <span class="severity-badge severity-green">مؤكد</span>
+      </div>
+    </div>
+  </header>
+
+        <div class="request-info-row">
+    <!-- العمود اليمين: الوقت + نوع الجلسة -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-regular fa-clock" style="color:#30B7C4;"></i>
+      <span class="info-label">الوقت</span>
+      </div>
+      <div class="info-value">05:00 مساءً</div>
+
+      <div class="info-label">نوع الجلسة</div>
+      <div class="info-value">جلسة متابعة</div>
+    </div>
+    <!-- العمود الوسط: نوع الاجتماع + الملاحظات -->
+    <div class="info-block">
+      <div class="info-head">
+      <i class="fa-solid fa-video" style="color:#30B7C4;"></i>
+      <span class="info-label">نوع الاجتماع</span>
+      </div>
+      <div class="info-value">مكالمة فيديو</div>
+
+      <div class="info-label">ملاحظات</div>
+      <div class="info-value">
+        متابعة الوسواس القهري
+      </div>
+    </div>
+     <!-- العمود اليسار: المدة فقط -->
+    <div class="info-block">
+  <div class="info-head">
+    <i class="fa-solid fa-calendar-days" style="color:#30B7C4;"></i>
+    <span class="info-label">المدة</span>
+  </div>
+  <div class="info-value">50 دقيقة</div>
+</div>
+
+  </div>
+
+  <footer class="request-footer">
+    <button class="btn-primary btn-accept">   <i class="fa-solid fa-video" style="color:#ffff;"></i>  انضم للجلسة     </button>
+   <button class="btn-outline btn-reject">عرض التفاصيل</button>
+  </footer>
+  </article>
+  
+    </section>
+  
+<footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+  </main>
+  </div>
+
+
+
+<script src="main.js"></script>
+</body>
+</html>

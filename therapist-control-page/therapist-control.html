@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>لوحة التحكم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+ 
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+<link rel=" stylesheet" href="../therapist.css">
+  <link rel="stylesheet" href="../total.css "/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="../homepage/index.html">
+        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+      </a>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link active">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+             <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link">
+             <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link ">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>
+
+        
+
+  <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link  ">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+        
+        <li>
+          <a href="../therapist-bell-page/therapist-bell.html" class="nav-link ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+        
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+            </button>
+        </div>
+    
+
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h1 class="page-title">لوحة التحكم</h1>
+      <button class="status-btn">
+        <span class="status-dot"></span>
+        متصل
+      </button>
+    </header>
+    <section class="stats-row">
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">إجمالي الحالات</div>
+          <div class="stat-value">24</div>
+        </div>
+        <div class="stat-icon">
+          <img src="./img/اجمالي الحالات.png" alt="إجمالي الحالات">
+        </div>
+      </div>
+
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">الحالات النشطة</div>
+          <div class="stat-value">18</div>
+        </div>
+        <div class="stat-icon">
+         <img src="./img/الحالات النشطة.png" alt=" لحالات النشطة">
+        </div>
+      </div>
+
+      
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">مواعيد اليوم</div>
+          <div class="stat-value">5</div>
+        </div>
+        <div class="stat-icon">
+         <img src="./img/مواعيد اليوم.png" alt="مواعيد اليوم">
+        </div>
+      </div>
+
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">طلبات الانتظار</div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon">
+         <img  src="./img/طلبات الانتظار.png" alt="طلبات الانتظار"> 
+        </div>
+      </div>
+
+    </section>
+
+    <section class="middle-row">
+
+      <div class="col-large">
+        <div class="dash-card section-card appointments-card">
+          <div class="card-header">
+            <h2>المواعيد القادمة</h2>
+            <button class="link-btn">عرض الكل</button>
+          </div>
+
+          <div class="appointment-item">
+            <div class="appt-main">
+              <div class="case-avatar">أ</div>
+              <div class="appt-text">
+                <div class="appt-name">أحمد محمد</div>
+                <div class="muted small">جلسة متابعة</div>
+              </div>
+            </div>
+           <div class="appt-time">
+              <div class="time">
+                <img   class="appt-icon" src="img/hour.png" alt="time" />
+                10:00 صباحاً
+              </div>
+              <button class="muted-btn">مؤكد</button>
+            </div>
+          </div>
+
+          <div class="appointment-item">
+            <div class="appt-main">
+              <div class="case-avatar">ف</div>
+              <div class="appt-text">
+                <div class="appt-name">فاطمة علي</div>
+                <div class="muted small">جلسة أولى</div>
+              </div>
+            </div>
+            <div class="appt-time">
+              <div class="time">
+                <img   class="appt-icon" src="img/hour.png" alt="time" />
+                11:30 صباحاً
+              </div>
+              <button class="muted-btn">مؤكد</button>
+            </div>
+          </div>
+
+          <div class="appointment-item">
+            <div class="appt-main">
+              <div class="case-avatar">خ</div>
+              <div class="appt-text">
+                <div class="appt-name">خالد يوسف</div>
+                <div class="muted small">جلسة متابعة</div>
+              </div>
+            </div>
+             <div class="appt-time">
+              <div class="time">
+                <img   class="appt-icon" src="img/hour.png" alt="time" />
+                02:00 مساءً
+              </div>
+              <button class="mutedd-btn">قيد الانتظار</button>
+            </div>
+          </div>
+
+          <div class="appointment-item">
+            <div class="appt-main">
+              <div class="case-avatar">ن</div>
+              <div class="appt-text">
+                <div class="appt-name">نورة سعيد</div>
+                <div class="muted small">جلسة استشارية</div>
+              </div>
+            </div>
+             <div class="appt-time">
+              <div class="time">
+                <img   class="appt-icon" src="img/hour.png" alt="time" />
+                03:30 مساءً
+              </div>
+              <button class="muted-btn">مؤكد</button>
+            </div>
+          </div>
+
+          <div class="appointment-item">
+            <div class="appt-main">
+              <div class="case-avatar">ع</div>
+              <div class="appt-text">
+                <div class="appt-name">عمر حسن</div>
+                <div class="muted small">جلسة متابعة</div>
+              </div>
+            </div>
+            <div class="appt-time">
+              <div class="time">
+                <img   class="appt-icon" src="img/hour.png" alt="time" />
+                05:00 مساءً
+              </div>
+              <button class="muted-btn">مؤكد</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- طلبات جديدة (العمود الصغير) -->
+      <div class="col-small">
+        <div class="dash-card section-card requests-card">
+          <div class="card-header">
+            <h2>طلبات جديدة</h2>
+            <button class="link-btn">عرض الكل</button>
+          </div>
+
+          <div class="list">
+
+            <div class="request-item">
+              <div class="line-1">
+                <img src="img/vector.png" alt="!" class="warn-icon">
+                <span class="name">محمد سالم</span>
+              </div>
+              <div class="line-2">
+                <span class="muted small">طلب جلسة استشارية</span>
+                <span class="muted small">منذ ساعتين</span>
+              </div>
+              <div class="actions">
+               
+                <button class="btn-primary btn-accept">قبول</button>
+                 <button class="btn-outline btn-reject">رفض</button>
+              </div>
+            </div>
+
+            <div class="request-item">
+              <div class="line-1">
+                <img src="img/vector.png" alt="!" class="warn-icon">
+                <span class="name">ريم يونس</span>
+              </div>
+              <div class="line-2">
+                <span class="muted small">غداً 09:00 صباحاً</span>
+                <span class="muted small">استشارة أسرية</span>
+              </div>
+              <div class="actions">
+                
+                <button class="btn-primary btn-accept">قبول</button>
+                <button class="btn-outline btn-reject">رفض</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="dash-card card-recent">
+      <div class="card-header">
+        <h2 class="card-title">الحالات الحديثة</h2>
+        <button class="link-btn">عرض الكل</button>
+      </div>
+
+      <div class="recent-grid">
+
+        <div class="case-card">
+          <div class="case-header">
+            <div class="case-avatar">خ</div>
+            <div>
+              <div class="case-name">خالد يوسف</div>
+              <div class="case-meta">منذ أسبوع</div>
+            </div>
+          </div>
+          <div class="case-condition">اضطرابات النوم</div>
+          <div class="progress-label">
+            <span>60%</span>
+            <span>التقدم</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 60%"></div>
+          </div>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <div class="case-avatar">ف</div>
+            <div>
+              <div class="case-name">فاطمة علي</div>
+              <div class="case-meta">منذ 3 أيام</div>
+            </div>
+          </div>
+          <div class="case-condition">اضطراب ما بعد الصدمة</div>
+          <div class="progress-label">
+            <span>45%</span>
+            <span>التقدم</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 45%"></div>
+          </div>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <div class="case-avatar">أ</div>
+            <div>
+              <div class="case-name">أحمد محمد</div>
+              <div class="case-meta">منذ يومين</div>
+            </div>
+          </div>
+          <div class="case-condition">قلق واكتئاب</div>
+          <div class="progress-label">
+            <span>75%</span>
+            <span>التقدم</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 75%"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    
+<footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+
+  </main>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
