@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>الملف الشخصي - د. سارة أحمد محمود</title>
+  <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- خط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- أيقونات -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+<link rel="stylesheet" href="..//therapist.css">
+  <link rel="stylesheet" href="style.css" />
+   <link rel="stylesheet" href="../total.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- الشريط الجانبي -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+       <div class="app-title">
+                <div class="title-text">
+                    <a href="../homepage/index.html">
+                        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+   <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+            <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link">
+            <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link ">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>
+
+ <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link  ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link ">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+
+         <li>
+          <a href="../therapist-bell-page/therapist-bell.htmll" class="nav-link active ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link  ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+<div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+                
+            </button>
+        </div>
+  </aside>
+   <main class="main">
+  <header class="main-header">
+      <h1 class="page-title">  التنبيهات</h1>
+      <button class="status-btn">
+        <span class="status-dot"></span>
+        متصل
+      </button>
+    </header>  
+
+    <section class="stats-row">
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> جميع التنبيهات  </div>
+          <div class="stat-value">8</div>
+        </div>
+        <div class="stat-icon-teal">
+         <i class="fa-solid fa-bell"></i>
+        </div>
+      </div>
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">  غير مقروءة</div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon-orange">
+        <i class="fa-solid fa-exclamation-circle"></i>
+        </div>
+      </div>     
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label">  تنبيهات عالية</div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon-red">
+         <i class="fa-solid fa-exclamation-circle"></i>
+        </div>
+      </div>
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> متوسط الإنجاز</div>
+          <div class="stat-value">62%</div>
+        </div>
+        <div class="stat-icon-blue">
+         <i class="fa-solid fa-clock-four" ></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="notifications-section" dir="rtl">
+
+  <div class="notifications">
+    <div class="notification appointment">
+      <div class="notif-icon">
+        <i class="fa-regular fa-calendar"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">  موعد جديد تم تأكيده </span>
+          <span class="status-dot"></span>
+        </div>
+        <p class="notif-text">
+         تم تأكيد موعد مع المريض أحمد محمد في 28 مارس 2026 الساعة 10:00 صباحاً
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time"> منذ 5 دقائق </span>
+           <span class="badge badge-urgent">عاجل</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+         <button class="icon-btn done" title="تم">
+          <i class="fa-regular fa-circle-check"></i>
+        </button>
+        
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      
+      </div>
+    </div>
+    <div class="notification message">
+      <div class="notif-icon">
+        <i class="fa-regular fa-message"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">رسالة جديدة من مريض</span>
+          <span class="status-dot"></span>
+        </div>
+        <p class="notif-text">
+        أرسلت فاطمة علي رسالة جديدة تطلب فيها استشارة عاجلة
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time">منذ 15 دقيقة</span>
+           <span class="badge badge-urgent">عاجل</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+         <button class="icon-btn done" title="تم">
+          <i class="fa-regular fa-circle-check"></i>
+        </button>
+
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+     
+      </div>
+    </div>
+    <div class="notification test-alert">
+      <div class="notif-icon">
+        <i class="fa-solid fa-circle-exclamation"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">تنبيه: اختبار نفسي جديد</span>
+          <span class="status-dot"></span>
+        </div>
+        <p class="notif-text">
+         أكمل المريض سارة خالد اختبار القلق العام (GAD-7) ويحتاج إلى مراجعة
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time"> منذ ساعة</span>
+        </div>
+      </div>
+
+      <div class="notif-actions">
+         <button class="icon-btn done" title="تم">
+          <i class="fa-regular fa-circle-check"></i>
+        </button>
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+       
+      </div>
+    </div>
+
+    <div class="notification reminder">
+      <div class="notif-icon">
+        <i class="fa-regular fa-clock"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">تذكير: جلسة قادمة</span>
+        </div>
+        <p class="notif-text">
+         لديك جلسة مع المريض محمد حسن خلال ساعة واحدة
+        </p>
+        <div class="notif-meta">
+           <span class="notif-time"> منذ ساعتين </span>
+          <span class="badge badge-urgent">عاجل</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+   
+    <div class="notification new-patient">
+      <div class="notif-icon">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">مريض جديد تم تعيينه</span>
+        </div>
+        <p class="notif-text">
+          تم تعيين المريض نور عبد الله لك، يرجى مراجعة ملفه الطبي.
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time">  منذ 3 ساعات</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="notification cancel">
+      <div class="notif-icon">
+        <i class="fa-regular fa-calendar"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">طلب إلغاء موعد</span>
+         
+        </div>
+        <p class="notif-text">
+          طلب المريض عمر السعيد إلغاء الموعد المحدد ليوم 30 مارس.
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time"> منذ 5 ساعات </span>
+        </div>
+      </div>
+      <div class="notif-actions">
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>   
+      </div>
+    </div>
+
+    
+    <div class="notification reply">
+      <div class="notif-icon">
+        <i class="fa-regular fa-message"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">رد على استفسار</span>
+         
+        </div>
+        <p class="notif-text">
+          رد المريض أحمد علي استفسارك بخصوص الأعراض الأخيرة.
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time"> أمس</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="notification monthly">
+      <div class="notif-icon">
+       <i class="fa-regular fa-clock"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-title-row">
+          <span class="notif-title">تذكير: تقرير شهري</span>
+        </div>
+        <p class="notif-text">
+         حان موعد إعداد التقرير الشهري لجلسات هذا الشهر
+        </p>
+        <div class="notif-meta">
+          <span class="notif-time"> أمس</span>
+        </div>
+      </div>
+      <div class="notif-actions">
+        <button class="icon-btn delete" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       <footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+ </main>
+</div>
+ <script src="main.js"></script>
+</body>
+</html>

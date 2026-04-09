@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ملاحظات الجلسات</title>
+   <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- خط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- أيقونات -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+        <link rel="stylesheet" href="..//therapist.css">
+  <link rel="stylesheet" href="style.css">
+   <link rel="stylesheet" href="../total.css" />
+</head>
+<body>
+
+<div class="app">
+  <!-- الشريط الجانبي -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+       <div class="app-title">
+                <div class="title-text">
+                    <a href="../homepage/index.html">
+                        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+   <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+            <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link">
+            <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link ">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link active">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>
+
+
+
+  <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link  ">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+        
+        <li>
+          <a href="../therapist-bell-page/therapist-bell.html" class="nav-link ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+
+
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+   <div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+            </button>
+        </div>
+  </aside>
+  <!-- المحتوى الرئيسي -->
+  <main class="main">
+     <header class="main-header">
+      <h1 class="page-title">  ملاحظات الجلسات</h1>
+      <button class="status-btn">
+        <span class="status-dot"></span>
+        متصل
+      </button>
+    </header>  
+  
+
+    <!-- الكرت الرئيسي لملاحظات الجلسة -->
+    
+      <header class="notes-header">
+        <div>
+        
+          <h2 class="notes-title">      <i class="fa-regular fa-file-lines  session-notes"></i>ملاحظات الجلسة</h2>
+          <p class="notes-subtitle">
+            توثيق تفاصيل الجلسة العلاجية    
+          </p>
+        </div>
+      </header>
+
+
+ <section class="notes-wrapper dash-card">
+        <!-- معلومات أساسية -->
+        <section class="notes-section" data-section>
+          <header class="section-header">
+            <div class="section-title-wrap">
+             
+              <h3 class="section-title">  <i class="fa-regular fa-user section-icon" style="color:#30B7C4;"></i>  معلومات أساسية</h3>
+            </div>
+          </header>
+
+          <div class="section-body">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="caseName">اسم المريض <span class="required">*</span></label>
+                <input type="text" id="caseName" placeholder="  اختر اسم المريض">
+              </div>
+
+              <div class="form-group">
+           <label for="caseName"> نوع الجلسة <span class="required">*</span></label>
+                <input type="text" id="caseName" placeholder="    جلسة المتابعة">
+              </div>
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+            
+              <div class="form-group">
+                <label for="sessionDate">تاريخ الجلسة<span class="required">*</span></label>
+                <input type="date" id="sessionDate" value="2026-02-25">
+              </div>
+              <div class="form-group">
+                <label for="sessionDuration">وقت الجلسة  <span class="required">*</span></label>
+               <input type="number" id="sessionDuration" placeholder="50">
+              </div>
+              </div>
+            
+             <div class="form-group">
+                <label for="sessionDuration">مدة الجلسة (بالدقائق)</label>
+                <input type="number" id="sessionDuration" placeholder="50">
+              </div>
+              
+          
+        </section>
+
+        <!-- محتوى الجلسة -->
+        <section class="notes-section" data-section>
+          <header class="section-header">
+            <div class="section-title-wrap">
+              <i class="fa-regular fa-file-lines section-icon"></i>
+              <h3 class="section-title">محتوى الجلسة</h3>
+            </div>
+            
+          </header>
+
+          <div class="section-body">
+            <div class="form-group">
+              <label for="sessionSummary">أهداف الجلسة<span class="required">*</span></label>
+              <textarea id="sessionSummary" rows="3"
+                        placeholder="أكتب الأهداف الرئيسية للجلسة ..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="mainEvents">  الحالة المزاجية للمريض <span class="required">*</span></label>
+              <textarea id="mainEvents" rows="2"
+                        placeholder="  مثال :هادئ,قلق,مكتئب, متفائل"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="clientReactions">  المواضيع التي تمت مناقشتها <span class="required">*</span></label>
+              <textarea id="clientReactions" rows="4"
+                        placeholder=" اذكر المواضيع والقضايا التي تمت مناقشتها خلال الجلسة..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="usedTechniques">  التقنيات والأدوات المستخدمة</label>
+              <textarea id="usedTechniques" rows="2"
+                        placeholder=":      مثال: العلاج المعرفي السلوكي، تمارين التنفس، إعادة الهيكلة المعرفية..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- التقييم والتقدم -->
+        <section class="notes-section" data-section>
+          <header class="section-header">
+            <div class="section-title-wrap">
+           <i class="fa-regular fa-calendar section-icon"></i>
+              <h3 class="section-title">التقييم والتقدم</h3>
+            </div>
+          </header>
+
+
+          <div class="section-body">
+            <div class="form-group">
+              <label for="progressLevel"> التقدم المريض <span class="required">*</span></label>
+               <textarea id="sessionSummary" rows="3"
+                        placeholder="  صف التقدم الذي أحرزه المريض منذ الجلسة السابقة...  "></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="progressNotes">  تقييم المخاطر  <span class="required">*</span></label>
+              <textarea id="progressNotes" rows="2"
+                        placeholder="منخفض"></textarea>
+            </div>
+            <p class="notes-footer-text">   تقييم احتمالية إيذاء النفس أو الآخرين </p>
+
+
+            <div class="form-group">
+              <label for="nextGoals"> ملاحظات المعالج  </label>
+              <textarea id="nextGoals" rows="2"
+                        placeholder=" أي ملاحظات أو تأملات حول الجلسة..."></textarea>
+            </div>
+          </div>
+        </section>
+
+
+
+<section class="notes-section" data-section>
+          <header class="section-header">
+            <div class="section-title-wrap">
+              <i class="fa-regular fa-circle-check section-icon"></i>
+              <h3 class="section-title"> الخطوات التالية </h3>
+            </div>
+          </header>
+
+
+          <div class="section-body">
+            <div class="form-group">
+              <label for="progressLevel">  الواجبات المنزلية </label>
+               <textarea id="sessionSummary" rows="3"
+                        placeholder="  الواجبات أو التمارين التي يجب على المريض القيام بها قبل الجلسة القادمة..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="progressNotes">   خطة الجلسة القادمة</label>
+              <textarea id="progressNotes" rows="4"
+                        placeholder="ما الذي سيتم التركيز عليه في الجلسة القادمة..."></textarea>
+            </div>
+          
+
+
+          </div>
+        </section>
+
+      
+ </section>
+ 
+
+
+        <!-- أزرار الحفظ -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary wide">حفظ الملاحظات</button>
+        </div>
+
+       
+      </form>
+
+
+    
+
+    <footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+
+  </main>
+
+
+<script src="main.js"></script>
+</body>
+</html>

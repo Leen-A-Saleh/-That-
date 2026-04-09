@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>الملف الشخصي - د. سارة أحمد محمود</title>
+  <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- خط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- أيقونات -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+<link rel="stylesheet" href="..//therapist.css">
+  <link rel="stylesheet" href="style.css" />
+   <link rel="stylesheet" href="../total.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- الشريط الجانبي -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+       <div class="app-title">
+                <div class="title-text">
+                    <a href="../homepage/index.html">
+                        <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-greeting">مرحباً،</div>
+        <div class="user-name">د. سارة أحمد</div>
+        <div class="user-role">أخصائي نفسي</div>
+      </div>
+    </div>
+
+   <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="../therapist-control-page/therapist-control.html" class="nav-link">
+            <i class="fa-solid fa-gauge"></i>
+            <span>لوحة التحكم</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-cases-page/therapist-casa.html" class="nav-link">
+            <i class=" fa-solid fa-user-group"></i>
+            <span>الحالات</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-request-page/therapest-request.html" class="nav-link">
+             <i class="fa-regular fa-calendar" ></i>
+            <span>طلبات المواعيد</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-appointment-page/therapist-appointment.html" class="nav-link ">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>مواعيدي</span>
+          </a>
+        </li>
+        <li>
+          <a href="../therapist-nots-page/therapest-nots.html" class="nav-link">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>ملاحظات الجلسات</span>
+          </a>
+        </li>        
+         <li>
+          <a href="../therapist-activities.management -page/therapist-activites.html" class="nav-link  ">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>  إدارة الأنشطة</span>
+          </a>
+        </li>
+    
+<li>
+          <a href="../therapist-review page/therapist-review.html" class="nav-link  active">
+            <i class=" fa-solid fa-square-check "></i>
+            <span> مراجعة نتائج الاختبار</span>
+          </a>
+        </li>
+
+
+        
+        <li>
+          <a href="../therapist-bell-page/therapist-bell.html" class="nav-link ">
+            <i class="fa-solid fa-bell"></i>
+            <span> التنبيهات</span>
+          </a>
+        </li>
+
+         <li>
+          <a href="../therapist-massege-page/therapist-massege.html" class="nav-link  ">
+            <i class="fa-solid fa-message"></i>
+            <span> المحادثات</span>
+          </a>
+        </li>
+         <li>
+          <a href="../therapist-personal-page/therapist-personal.html" class="nav-link  ">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>الملف الشخصي</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+<div class="sidebar-footer">
+            <button class="logout-btn">
+                 <a href="../homepage/index.html">
+                   <img src="./img/Link.png">
+                 </a>
+            </button>
+        </div>
+  </aside>
+   <main class="main">
+  <header class="main-header">
+      <h1 class="page-title"> مراجعة نتائج الاختبار </h1>
+     
+    </header>  
+<section class="stats-row">
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> بانتظار المراجعة  </div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon-red">
+        <i class="fa-solid fa-clock " ></i>
+        </div>
+      </div>
+
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> تمت المراجعة</div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon-green">
+          <i class="fa-regular fa-circle-check" ></i>
+        </div>
+      </div>
+
+      
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> تمت المناقشة </div>
+          <div class="stat-value">2</div>
+        </div>
+        <div class="stat-icon-blue">
+        <i class="fa-solid fa-file-lines"></i>
+        </div>
+      </div>
+
+      <div class="stat-card ">
+        <div class="stat-info">
+          <div class="stat-label"> إجمالي الاختبارات</div>
+          <div class="stat-value">8</div>
+        </div>
+        <div class="stat-icon-teal">
+         <i class="fa-solid fa-file-lines"></i>
+        </div>
+      </div>
+
+    </section>
+
+<section class="add-activity-section">
+  <div class="container">
+    <div class="search-container">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" 
+               class="search-input" 
+               placeholder="البحث عن نشاط..." 
+               id="searchInput">
+      </div>
+        <div class="filter-btn" id="filterBtn">
+        <i class="fa-solid fa-filter   "></i>
+         <input type="text" 
+               class="search-input" 
+               placeholder="  " 
+               >
+      </div>     
+      <div class="filter-btn" id="filterBtn">
+        <i class="fa-solid fa-filter "></i>
+         <input type="text" 
+               class="search-input" 
+               placeholder="  " >
+              
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tests-section">
+  <div class="table-wrapper">
+    <div class="cardo">
+      <table>
+        <thead>
+          <tr>
+            <th>المريض</th>
+            <th>الاختبار</th>
+            <th>النوع</th>
+            <th>النتيجة</th>
+            <th>الشدة</th>
+            <th>الاتجاه</th>
+               <th class="hide-sm">التاريخ</th>
+            <th>الحالة</th>
+            <th>الإجراءات</th>
+         
+          </tr>
+        </thead>
+        <tbody>
+         
+          <tr>
+           <td>
+              <span class="patient-name">أحمد محمد</span>
+            </td>
+
+              <td>
+              <span class="test-title">مقياس بيك للاكتئاب</span>
+            </td>
+
+            <td>
+              <span class="pill pill-type">اكتئاب</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">28/63</span>
+                <span class="result-percent">44%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-mid">متوسط</span>
+            </td>
+
+             <td>
+              <span class="trend up">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                ارتفاع
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/25</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-wait">  
+                بانتظار المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name="أحمد محمد">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+  
+           <tr>
+           <td>
+              <span class="patient-name">فاطمة علي </span>
+            </td>
+
+              <td>
+              <span class="test-title">مقياس القلق العام 
+                <br>(GAD-7)</span>
+            </td>
+
+            <td>
+              <span class="pill pill-type">قلق</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">15/21</span>
+                <span class="result-percent">71%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-high">مرتفع</span>
+            </td>
+
+             <td>
+              <span class="trend down">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+                تحسن
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/24</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-review">
+               
+               تمت المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name=" فاطمة علي">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+         <tr>
+           <td>
+              <span class="patient-name"> سارة خالد </span>
+            </td>
+
+              <td>
+              <span class="test-title"> مقياس الضغط النفسي</span>
+            </td>
+
+            <td>
+              <span class="pill pill-type">ضغط نفسي</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">12/40</span>
+                <span class="result-percent">30%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-low">منخفض</span>
+            </td>
+
+             <td>
+              <span class="trend stable">
+                <i class="fa-solid fa-minus"></i>
+                مستقر
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/23</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-discuss">
+                
+                تمت المناقشة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name="  سارة خالد">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+         <tr>
+           <td>
+              <span class="patient-name"> محمد حسن  </span>
+            </td>
+
+              <td>
+              <span class="test-title"> مقياس اضطراب ما بعد
+                <br>  الصدمة</span>
+            </td>
+
+            <td>
+              <span class="pill pill-type"> صدمة</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">45/80</span>
+                <span class="result-percent">56%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-high">مرتفع</span>
+            </td>
+
+             <td>
+              <span class="trend up">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                ارتفاع
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/22</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-wait">
+                
+                 بانتظار المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name="  محمد حسن ">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+            <tr>
+           <td>
+              <span class="patient-name"> نور عبدالله </span>
+            </td>
+
+              <td>
+              <span class="test-title"> مقياس الرهاب الاجتماعي </span>
+            </td>
+
+            <td>
+              <span class="pill pill-type"> رهاب</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">32/60</span>
+                <span class="result-percent">53%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-mid">متوسط</span>
+            </td>
+
+             <td>
+              <span class="trend up">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+                تحسن
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/21</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-review">
+                 تمت المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name="  نور عبدالله ">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+         <tr>
+           <td>
+              <span class="patient-name">  ليلى أحمد </span>
+            </td>
+
+              <td>
+              <span class="test-title"> مقياس بيك للاكتئاب</span>
+            </td>
+
+            <td>
+              <span class="pill pill-type"> اكتئاب</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">48/63</span>
+                <span class="result-percent">76%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-up">شديد</span>
+            </td>
+
+         <td>
+              <span class="trend up">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                ارتفاع
+              </span>
+            </td>
+            
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/20</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-wait">
+               
+                 بانتظار المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name=" ليلى أحمد  ">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+          <tr>
+           <td>
+              <span class="patient-name">   عمر سعيد </span>
+            </td>
+
+              <td>
+              <span class="test-title">  مقياس القلق العام <br>
+                (GAD-7) </span>
+            </td>
+
+            <td>
+              <span class="pill pill-type"> قلق</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">7/21</span>
+                <span class="result-percent">33%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-low">منخفض</span>
+            </td>
+
+             <td>
+              <span class="trend down">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+                تحسن
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/19</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-discuss">
+                
+              تمت المناقشة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name=" عمر سعيد ">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+        <tr>
+           <td>
+              <span class="patient-name">مريم يوسف  </span>
+            </td>
+
+              <td>
+              <span class="test-title"> مقياس الوسواس القهري </span>
+            </td>
+
+            <td>
+              <span class="pill pill-type"> وسواس</span>
+            </td>
+          
+            <td>
+              <div class="result">
+                <span class="result-score">24/40</span>
+                <span class="result-percent">60%</span>
+              </div>
+            </td>
+
+               <td>
+              <span class="pill pill-intensity-high">مرتفع</span>
+            </td>
+
+             <td>
+              <span class="trend stable">
+                <i class="fa-solid fa-minus"></i>
+                مستقر
+              </span>
+            </td>
+
+            <td class="hide-sm">
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>2023/03/18</span>
+              </div>
+            </td>
+
+             <td>
+              <span class="status-pill status-review">
+              
+               تمت المراجعة
+              </span>
+            </td>
+          
+            <td class="actions">
+              <button class="action-btn action-view" data-name=" مريم يوسف">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </td>
+
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+    
+      <footer class="main-footer">
+    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+</footer>
+ </main>
+</div>
+ <script src="main.js"></script>
+</body>
+</html>
