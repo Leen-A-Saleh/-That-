@@ -1,0 +1,314 @@
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Cairo", system-ui, -apple-system, BlinkMacSystemFont,
+  "Segoe UI", sans-serif;
+}
+/* notes wrapper */
+.notes-wrapper {
+  border: 1px solid #FFFFFF;
+  margin-bottom: 14px;
+}
+.notes-header {
+  border-bottom: 1px solid #FFFFFF;
+  background-color: #FFFFFF;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  
+}
+.session-notes {
+  width: 48px;              
+  height: 48px;            
+  background-color: #E7EFEF;
+  border-radius: 50%;      
+  display: inline-flex;     
+  align-items: center;
+  justify-content: center;       
+  margin: 6px;  
+   font-size: 24px;
+  color: #30B7C4;
+
+}
+.notes-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333333;
+}
+.notes-icon {   
+  width: 48px; 
+   height: 48px;  
+   border-radius: 16777200px;
+    background-color: #E0F2FE;
+    display: flex;
+   align-items: center;  
+     justify-content: center;
+     }
+    .notes-icon img{
+      width:48px;
+      height: 48px;
+    }
+.notes-subtitle{
+  font-size: 16px;
+  font-weight: 400;
+  color: #4A5565;
+  margin-right: 50px;
+}
+.dash-card {
+  border-radius: 16px;
+  
+  padding: 14px 18px 16px;
+}
+.notes-section {
+  border-radius: 12px;
+  border: 1px solid #FFFFFF;
+  background: #FFFFFF;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-icon {
+  font-size: 14px;
+  color: #30B7C4;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333333;
+}
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333333;
+}
+.required {
+  color:#333333;
+  margin-right: 2px;
+}
+
+
+
+
+
+
+/* session select */
+
+.session-select-wrapper {
+  position: relative;
+}
+
+.session-btn {
+  border-radius: 999px;
+  border: 1px solid  #ffffff;
+  background: #ffffff;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5563;
+}
+
+.session-menu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid  #ffffff;;
+  box-shadow: var(--shadow-card);
+  padding: 4px 0;
+  min-width: 140px;
+  display: none;
+  z-index: 20;
+}
+
+.session-menu.open {
+  display: block;
+}
+
+.session-menu button {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: right;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+.session-menu button:hover {
+  background: #f3f4f6;
+}
+
+
+
+
+
+
+/* grids */
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  border-radius: 10px;
+  border: 1px solid  #D6DFE9;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-family: inherit;
+  background: #ffffff;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+/* actions */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-primary {
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  padding: 8px 20px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-primary.wide {
+  flex: 1;
+}
+
+.cancel-link {
+  border: none;
+  background: none;
+  color: #e7000b;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* footer text inside card */
+
+.notes-footer-text {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* page footer */
+
+.footer {
+  margin-top: auto;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 6px;
+}
+
+/* responsive */
+
+@media (max-width: 992px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid  #ffffff;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .sidebar-header,
+  .user-card {
+    border-bottom: none;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+  }
+
+  .sidebar-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .sidebar-footer {
+    margin-top: 0;
+    border-top: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .form-grid-2,
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
