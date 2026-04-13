@@ -1,0 +1,268 @@
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+    width: 260px;
+    background: #FFFFFF;
+    border-left: 1px solid  #e7eaf3;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 18px;
+}
+.sidebar-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid  #e7eaf3;
+}
+.sidebar-footer .logout-btn {
+  border: none;
+  background: none;
+  outline: none;
+  padding: 0;
+}
+
+.sidebar-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid  #e7eaf3;
+}
+.sidebar-footer .logout-btn {
+  border: none;
+  background: none;
+  outline: none;
+  padding: 0;
+}
+/* user */
+
+.user-card {
+  padding: 10px 0 12px;
+  border-bottom: 1px solid  #e7eaf3;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  text-align: right;
+}
+
+.user-greeting {
+  font-size: 14px;
+  color:#4A5565;
+  margin-bottom: 2px;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: #333333;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #6A7282;
+}
+
+/* nav */
+
+.sidebar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav li {
+  margin-top: 4px;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  font-size: 16px;
+  color: #364153;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.sidebar-nav .nav-link i {
+  width: 18px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.sidebar-footer {
+ margin-top: auto;              
+  padding-top: 12px;
+  border-top: 1px solid #e7eaf3;
+  display: flex;
+  justify-content: center;
+}
+.logout-btn {
+  width: 100%;
+  border: none;
+  background: none;
+  color: #e7000b;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.main {
+  flex: 1;
+  padding: 18px 24px 12px;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  background-color: #F5F7F5;
+}
+.main-header {
+   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 20px 15px ;
+  background-color:#FFFFFF ;
+  
+}
+.page-title {
+  margin:  0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333333;
+  text-align: right;
+  vertical-align: middle;
+  line-height: 28px;
+
+}
+.status-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 18px;
+  border-radius: 8px;
+  border: 1px solid#E7EFEF;
+  background:#E7EFEF;
+  color:#364153;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00C950;
+}
+
+/* =========================================
+   SIDEBAR TOGGLE BUTTON (hidden on desktop)
+   ========================================= */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #364153;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+/* =========================================
+   SIDEBAR OVERLAY (hidden by default)
+   ========================================= */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+}
+.sidebar-overlay.active {
+  display: block;
+}
+
+ 
+
+/* ---------- Small tablets / large phones (<= 900px) ---------- */
+@media (max-width: 900px) {
+  /* Show hamburger button */
+  .sidebar-toggle {
+    display: block;
+  }
+
+  /* Sidebar slides in from the right (RTL) */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 999;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    border-left: 1px solid #e7eaf3;
+    overflow-y: auto;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e7eaf3;
+    text-align: center;
+  }
+  .sidebar-header .brand-icon {
+    max-height: 34px;
+    width: auto;
+  }
+
+  .main {
+    padding: 14px 14px 10px;
+  }
+  /* override total.css fixed header dimensions */
+  .main-header {
+    padding: 14px !important;
+    margin-bottom: 12px;
+    height: auto !important;
+    width: 100% !important;
+  }
+  .page-title {
+    font-size: 18px;
+    line-height: 26px;
+  }
+}
+
+/* ---------- Phones (<= 600px) ---------- */
+@media (max-width: 600px) {
+  .main {
+    padding: 12px 10px 10px;
+  }
+  .main-header {
+    padding: 12px !important;
+    margin-bottom: 10px;
+  }
+  .page-title {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .status-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ---------- Small phones (<= 400px) ---------- */
+@media (max-width: 400px) {
+  .sidebar {
+    width: 220px;
+  }
+  .sidebar-nav .nav-link {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
