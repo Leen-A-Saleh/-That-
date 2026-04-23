@@ -23,7 +23,6 @@ if (filterToggle && filterMenu) {
   });
 }
 
-// Submit search form on Enter or after typing stops
 const searchInput = document.getElementById('caseSearch');
 let searchTimer;
 

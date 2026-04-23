@@ -20,15 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = moods[v];
     if (!data) return;
 
-    // emoji + text + advice
     moodEmoji.textContent = data.emoji;
     moodText.textContent = data.text;
     moodAdvice.querySelector(".mood-advice-text").textContent = data.advice;
 
-    // active choice
     choices.forEach(el => el.classList.toggle("active", Number(el.dataset.value) === v));
 
-    // thumb position: 1..5
     const min = Number(moodRange.min);
     const max = Number(moodRange.max);
     const percent = ((v - min) / (max - min)) * 100; // 0..100

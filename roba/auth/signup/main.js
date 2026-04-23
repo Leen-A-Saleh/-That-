@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextBtn = document.getElementById("nextBtn");
   const form = document.getElementById("surveyForm");
 
-  // لو ما قدر يحصل أي عنصر مهم، يوقف
   if (
     !steps.length ||
     !currentStepEl ||
@@ -24,33 +23,26 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentIndex = 0;
   const total = steps.length;
 
-  // عرض العدد الكلي للخطوات
   totalStepsEl.textContent = total;
 
   function showStep(index) {
-    // إظهار/إخفاء الخطوات
     steps.forEach((step, i) => {
       step.classList.toggle("active", i === index);
     });
 
-    // تحديث رقم الخطوة
     currentStepEl.textContent = index + 1;
 
-    // تحديث شريط التقدم
     const percent = ((index + 1) / total) * 100;
     progressBar.style.width = percent + "%";
 
-    // تفعيل/تعطيل زر السابق
     prevBtn.disabled = index === 0;
 
-    // تغيير نص زر التالي في آخر خطوة
     nextBtn.textContent = index === total - 1 ? "إرسال" : "التالي";
   }
 
   function validateCurrentStep() {
     const step = steps[currentIndex];
 
-    // التحقق من أسئلة الراديو في هذه الخطوة
     const radios = step.querySelectorAll('input[type="radio"]');
     if (radios.length > 0) {
       const names = new Set();
@@ -69,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // التحقق من وجود على الأقل تشيك بوكس واحد لو فيه تشيك بوكس في هذه الخطوة
     const checkboxes = step.querySelectorAll('input[type="checkbox"]');
     if (checkboxes.length > 0) {
       const anyChecked = Array.from(checkboxes).some((c) => c.checked);
@@ -80,7 +71,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // التحقق من الحقول النصية/الرقمية في هذه الخطوة
     const textInputs = step.querySelectorAll(
       'input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea'
     );
@@ -89,12 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const name = input.name;
       const value = input.value.trim();
 
-      // حقل تفاصيل المشاكل الجسدية: مطلوب فقط إذا اختار المستخدم "نعم"
       if (name === "physical_details") {
         const physicalIssues = form.querySelector(
           'input[name="physical_issues"]:checked'
         );
-        if (!physicalIssues || physicalIssues.value !== "yes") {
+        if (!physicalIssues || physicalIssues.value !== "YES") {
           continue;
         }
       }
@@ -109,7 +98,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return true;
   }
 
-  // زر التالي / إرسال
   nextBtn.addEventListener("click", () => {
     if (!validateCurrentStep()) return;
 
@@ -117,22 +105,34 @@ document.addEventListener("DOMContentLoaded", function () {
       currentIndex++;
       showStep(currentIndex);
     } else {
-      // هذه آخر خطوة: إرسال النموذج والانتقال
       const formData = new FormData(form);
-      console.log("Form data:");
+      const surveyData = {};
+
       for (const [name, value] of formData.entries()) {
-        console.log(name, "=>", value);
+        if (name.endsWith("[]")) {
+          const key = name.slice(0, -2);
+          if (!surveyData[key]) {
+            surveyData[key] = [];
+          }
+          surveyData[key].push(value);
+        } else {
+          surveyData[name] = value;
+        }
       }
 
-      alert("تم إرسال الاستبيان بنجاح، شكرًا لمشاركتك!");
-  window.location.href = "../sendpage/index.php";
+      if (Array.isArray(surveyData.symptoms)) {
+        surveyData.symptoms = surveyData.symptoms.join("،");
+      }
+      if (Array.isArray(surveyData.repeated_symptoms)) {
+        surveyData.repeated_symptoms = surveyData.repeated_symptoms.join("،");
+      }
 
-      // الانتقال لصفحة الإرسال
-    
+      sessionStorage.setItem("surveyData", JSON.stringify(surveyData));
+
+      window.location.href = "../sendpage/index.php";
     }
   });
 
-  // زر السابق
   prevBtn.addEventListener("click", () => {
     if (currentIndex > 0) {
       currentIndex--;
@@ -140,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // تعطيل/تفعيل حقل تفاصيل المشاكل الجسدية حسب اختيار المستخدم
   const physicalIssuesRadios = form.querySelectorAll(
     'input[name="physical_issues"]'
   );
@@ -151,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updatePhysicalDetailsState() {
     if (!physicalDetailsInput) return;
     const selected = form.querySelector('input[name="physical_issues"]:checked');
-    if (selected && selected.value === "no") {
+    if (selected && selected.value === "NO") {
       physicalDetailsInput.disabled = true;
       physicalDetailsInput.value = "";
     } else {
@@ -164,6 +163,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   updatePhysicalDetailsState();
 
-  // إظهار أول خطوة عند تحميل الصفحة
   showStep(currentIndex);
 });

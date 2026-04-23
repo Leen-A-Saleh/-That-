@@ -5,6 +5,13 @@
   justify-content: center;
   padding: 20px;
 }
+.page-main {
+  padding-top: 40px;
+}
+.page-main .card {
+  width: 520px;
+  padding-top: 20px;
+}
 .card-title {
   font-size: 24px;
   font-weight:700;

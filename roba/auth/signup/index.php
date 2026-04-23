@@ -9,21 +9,21 @@
     rel="stylesheet"
   />
   <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
-     
+
 <link rel="stylesheet" href="../../therapist/total.css">
 <script src="../../therapist/total.js"></script>
 </head>
 
 <body>
     <header class="main-header">
-   
+
     <div class="header-right">
         <div class="brand">
                  <a href="../../homepage/index.php">
   <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
 </a>
-         
-           
+
+
         </div>
     </div>
     <a href="./signup.html" class="nav-link">انشاء حساب جديد</a>
@@ -43,7 +43,8 @@
       </div>
 
       <form id="surveyForm">
-       
+
+        <!-- Step 1: treatment_type -->
         <div class="form-step active">
           <h2 class="step-title">نوع العلاج</h2>
           <div class="field-group">
@@ -68,25 +69,17 @@
               العلاج الجماعي
             </label>
             <label class="option-line">
-              <input
-                type="radio"
-                name="treatment_type"
-                value="التقييم النفسي للبالغين"
-              />
+              <input type="radio" name="treatment_type" value="التقييم النفسي للبالغين" />
               التقييم النفسي للبالغين
             </label>
             <label class="option-line">
-              <input
-                type="radio"
-                name="treatment_type"
-                value="التقييم النفسي للأطفال"
-              />
+              <input type="radio" name="treatment_type" value="التقييم النفسي للأطفال" />
               التقييم النفسي للأطفال
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 2: symptoms -->
         <div class="form-step">
           <h2 class="step-title">ما الأعراض التي تلاحظها؟</h2>
           <p class="field-hint">يمكن اختيار أكثر من خيار</p>
@@ -109,11 +102,7 @@
               تقلب مزاج
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="symptoms[]"
-                value="أفكار سلبية متكررة"
-              />
+              <input type="checkbox" name="symptoms[]" value="أفكار سلبية متكررة" />
               أفكار سلبية متكررة
             </label>
             <label class="option-line">
@@ -137,19 +126,11 @@
               آلام جسدية متكررة (صداع، آلام معدة) دون وجود أسباب عضوية
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="symptoms[]"
-                value="صعوبة تكوين علاقات اجتماعية"
-              />
+              <input type="checkbox" name="symptoms[]" value="صعوبة تكوين علاقات اجتماعية" />
               صعوبة تكوين علاقات اجتماعية
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="symptoms[]"
-                value="مشاكل عائلية مستمرة"
-              />
+              <input type="checkbox" name="symptoms[]" value="مشاكل عائلية مستمرة" />
               مشاكل مع شخص من أفراد العائلة بشكل مستمر
             </label>
             <label class="option-line">
@@ -158,116 +139,72 @@
           </div>
         </div>
 
-      
+        <!-- Step 3: repeated_symptoms -->
         <div class="form-step">
           <h2 class="step-title">هل تشعر مؤخرًا بتكرار أي من هذه الأعراض؟</h2>
           <p class="field-hint">يمكن اختيار أكثر من خيار</p>
           <div class="field-group">
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="مشاكل في النوم"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="مشاكل في النوم" />
               مشاكل في النوم
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="العصبية والانفعالات المتكررة"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="العصبية والانفعالات المتكررة" />
               العصبية والانفعالات المتكررة
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="البكاء المستمر"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="البكاء المستمر" />
               البكاء المستمر
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="الحزن الدائم والمزاج المنخفض"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="الحزن الدائم والمزاج المنخفض" />
               الحزن الدائم والمزاج المنخفض
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="الرغبة بالعزلة"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="الرغبة بالعزلة" />
               الرغبة بالعزلة
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="مشاكل في الشهية"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="مشاكل في الشهية" />
               مشاكل في الشهية (أكل كميات أكبر/أقل من المعتاد)
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="إرهاق وتعب مزمن"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="إرهاق وتعب مزمن" />
               إرهاق وتعب مزمن
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="فقدان الرغبة بالاستمتاع بأي شيء"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="فقدان الرغبة بالاستمتاع بأي شيء" />
               فقدان الرغبة بالاستمتاع بأي شيء
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="سلوك إدماني"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="سلوك إدماني" />
               سلوك إدماني للمواد المخدرة أو الكحول
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="مشاكل في العلاقات الاجتماعية"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="مشاكل في العلاقات الاجتماعية" />
               مشاكل في العلاقات الاجتماعية
             </label>
             <label class="option-line">
-              <input
-                type="checkbox"
-                name="repeated_symptoms[]"
-                value="لا شيء مما ذكر"
-              />
+              <input type="checkbox" name="repeated_symptoms[]" value="لا شيء مما ذكر" />
               لا شيء مما ذكر
             </label>
           </div>
         </div>
 
-       
+        <!-- Step 4: prev_therapy -->
         <div class="form-step">
           <h2 class="step-title">هل تلقيت علاجًا نفسيًا سابقًا؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="prev_therapy" value="نعم" /> نعم
+              <input type="radio" name="prev_therapy" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="prev_therapy" value="لا" /> لا
+              <input type="radio" name="prev_therapy" value="NO" /> لا
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 5: age -->
         <div class="form-step">
           <h2 class="step-title">ما هو عمرك؟</h2>
           <div class="field-group">
@@ -282,20 +219,20 @@
           </div>
         </div>
 
-        
+        <!-- Step 6: gender -->
         <div class="form-step">
           <h2 class="step-title">ما هو جنسك؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="gender" value="أنثى" /> أنثى
+              <input type="radio" name="gender" value="FEMALE" /> أنثى
             </label>
             <label class="option-line">
-              <input type="radio" name="gender" value="ذكر" /> ذكر
+              <input type="radio" name="gender" value="MALE" /> ذكر
             </label>
           </div>
         </div>
 
-       
+        <!-- Step 7: nationality -->
         <div class="form-step">
           <h2 class="step-title">ما هي جنسيتك؟</h2>
           <div class="field-group">
@@ -309,47 +246,47 @@
           </div>
         </div>
 
-        
+        <!-- Step 8: therapist_gender -->
         <div class="form-step">
           <h2 class="step-title">ما هو الجنس المفضّل للمعالج؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="therapist_gender" value="ذكر" /> ذكر
+              <input type="radio" name="therapist_gender" value="MALE" /> ذكر
             </label>
             <label class="option-line">
-              <input type="radio" name="therapist_gender" value="أنثى" /> أنثى
+              <input type="radio" name="therapist_gender" value="FEMALE" /> أنثى
             </label>
             <label class="option-line">
-              <input type="radio" name="therapist_gender" value="لا يهم" />
+              <input type="radio" name="therapist_gender" value="NO_PREFERENCE" />
               لا يهم
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 9: family_history -->
         <div class="form-step">
           <h2 class="step-title">
             هل يوجد تاريخ عائلي لأي مشاكل نفسية أو عقلية؟
           </h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="family_history" value="نعم" /> نعم
+              <input type="radio" name="family_history" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="family_history" value="لا" /> لا
+              <input type="radio" name="family_history" value="NO" /> لا
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 10: physical_issues -->
         <div class="form-step">
           <h2 class="step-title">هل تعاني من مشاكل جسدية صحية؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="physical_issues" value="yes" /> نعم
+              <input type="radio" name="physical_issues" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="physical_issues" value="no" /> لا
+              <input type="radio" name="physical_issues" value="NO" /> لا
             </label>
           </div>
           <div class="field-group">
@@ -363,75 +300,71 @@
           </div>
         </div>
 
-        
+        <!-- Step 11: marital_status -->
         <div class="form-step">
           <h2 class="step-title">ما هي حالتك الاجتماعية؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="marital_status" value="أعزب/عزباء" />
+              <input type="radio" name="marital_status" value="SINGLE" />
               أعزب/عزباء
             </label>
             <label class="option-line">
-              <input type="radio" name="marital_status" value="متزوج/ـة" />
+              <input type="radio" name="marital_status" value="MARRIED" />
               متزوج/ـة
             </label>
             <label class="option-line">
-              <input type="radio" name="marital_status" value="أرمل/ـة" />
+              <input type="radio" name="marital_status" value="WIDOWED" />
               أرمل/ـة
             </label>
             <label class="option-line">
-              <input type="radio" name="marital_status" value="مطلق/ـة" />
+              <input type="radio" name="marital_status" value="DIVORCED" />
               مطلق/ـة
             </label>
             <label class="option-line">
-              <input type="radio" name="marital_status" value="مرتبط/ـة" />
+              <input type="radio" name="marital_status" value="IN_RELATIONSHIP" />
               مرتبط/ـة
             </label>
             <label class="option-line">
-              <input type="radio" name="marital_status" value="منفصل/ـة" />
+              <input type="radio" name="marital_status" value="SEPARATED" />
               منفصل/ـة
             </label>
             <label class="option-line">
-              <input
-                type="radio"
-                name="marital_status"
-                value="أفضل عدم الإجابة"
-              />
+              <input type="radio" name="marital_status" value="PREFER_NOT_TO_SAY" />
               أفضل عدم الإجابة
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 12: education_level -->
         <div class="form-step">
           <h2 class="step-title">ما هو مستواك التعليمي؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="education_level" value="أقل من الثانوية" />
+              <input type="radio" name="education_level" value="LESS_THAN_HIGH_SCHOOL" />
               أقل من الثانوية
             </label>
             <label class="option-line">
-              <input type="radio" name="education_level" value="ثانوية عامة" />
+              <input type="radio" name="education_level" value="HIGH_SCHOOL" />
               ثانوية عامة
             </label>
             <label class="option-line">
-              <input type="radio" name="education_level" value="بكالوريوس" />
+              <input type="radio" name="education_level" value="BACHELOR" />
               بكالوريوس
             </label>
             <label class="option-line">
-              <input type="radio" name="education_level" value="ماستر" /> ماستر
+              <input type="radio" name="education_level" value="MASTER" /> ماستر
             </label>
             <label class="option-line">
-              <input type="radio" name="education_level" value="دكتوراه" />
+              <input type="radio" name="education_level" value="PHD" />
               دكتوراه
             </label>
             <label class="option-line">
-              <input type="radio" name="education_level" value="أخرى" /> أخرى
+              <input type="radio" name="education_level" value="OTHER" /> أخرى
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 13: smoking -->
         <div class="form-step">
           <h2 class="step-title">هل تدخن؟</h2>
           <p class="field-hint">
@@ -439,66 +372,57 @@
           </p>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="smoking" value="نعم" /> نعم
+              <input type="radio" name="smoking" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="smoking" value="لا" /> لا
+              <input type="radio" name="smoking" value="NO" /> لا
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 14: alcohol -->
         <div class="form-step">
           <h2 class="step-title">هل تتناول المشروبات الكحولية؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="alcohol" value="نعم" /> نعم
+              <input type="radio" name="alcohol" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="alcohol" value="لا" /> لا
+              <input type="radio" name="alcohol" value="NO" /> لا
             </label>
           </div>
         </div>
 
-        
+        <!-- Step 15: drugs -->
         <div class="form-step">
           <h2 class="step-title">هل تتعاطى أي نوع من المخدرات؟</h2>
           <div class="field-group">
             <label class="option-line">
-              <input type="radio" name="drugs" value="نعم" /> نعم
+              <input type="radio" name="drugs" value="YES" /> نعم
             </label>
             <label class="option-line">
-              <input type="radio" name="drugs" value="لا" /> لا
+              <input type="radio" name="drugs" value="NO" /> لا
             </label>
           </div>
         </div>
 
-   
-  
+        <!-- Step 16: contact_preference -->
         <div class="form-step">
-            <h2 class="step-title">
-              كيف تحب أن يتواصل معك فريق خدمة العملاء؟
-            </h2>
-            <div class="field-group">
-              <label class="option-line">
-                <input
-                  type="radio"
-                  name="contact_preference"
-                  value="الواتساب"
-                />
-                الواتساب
-              </label>
-              <label class="option-line">
-                <input
-                  type="radio"
-                  name="contact_preference"
-                  value="البريد الإلكتروني"
-                />
-                البريد الإلكتروني
-              </label>
-            </div>
+          <h2 class="step-title">
+            كيف تحب أن يتواصل معك فريق خدمة العملاء؟
+          </h2>
+          <div class="field-group">
+            <label class="option-line">
+              <input type="radio" name="contact_preference" value="WHATSAPP" />
+              الواتساب
+            </label>
+            <label class="option-line">
+              <input type="radio" name="contact_preference" value="EMAIL" />
+              البريد الإلكتروني
+            </label>
           </div>
-        </form>
+        </div>
+      </form>
 
         <!-- أزرار التنقل -->
         <div class="nav-buttons">

@@ -8,19 +8,19 @@ unset($_SESSION['errors'], $_SESSION['old']);
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>استبيان لاختيار معالج نفسي مناسب</title>
+  <title>إنشاء حساب</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link
     href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="icon" type="./img/Silver.png" href="img/Silver.png">
- 
-      <link  rel="stylesheet" href="../../therapist/root.css">
-    <link rel="stylesheet" href="../../therapist/total.css">  
- <link rel="stylesheet" href="./style.css" />
- 
-   <script src="../../therapist/total.js"></script>
+  <link rel="icon" type="image/png" href="img/Silver.png">
+
+  <link rel="stylesheet" href="../../therapist/root.css">
+  <link rel="stylesheet" href="../../therapist/total.css">
+  <link rel="stylesheet" href="./style.css" />
+
+  <script src="../../therapist/total.js"></script>
 </head>
 
 
@@ -28,33 +28,24 @@ unset($_SESSION['errors'], $_SESSION['old']);
 
   <header class="main-header">
     <div class="header-right">
-        <div class="brand">
-                 <a href="../../homepage/index.php">
-  <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
-</a>
-         
-        </div>
+      <div class="brand">
+        <a href="../../homepage/index.php">
+          <img src="img/Frame 392 (1).png" alt="شعار ذات" class="brand-icon">
+        </a>
+      </div>
     </div>
 
     <div class="header-left">
-        <a href="../login/index.php" class="nav-link">تسجيل الدخول</a>
-       <a href="../signup/index.php" class="btn btn-primary" id="signupLink">
+      <a href="../login/index.php" class="nav-link">تسجيل الدخول</a>
+      <a href="../signup/index.php" class="btn btn-primary" id="signupLink">
         إنشاء حساب
-    </a>
+      </a>
     </div>
-</header>
+  </header>
 
-  
+
   <main class="page-main">
     <section class="card">
-      <p class="step-label">
-        خطوة <span id="currentStep">1</span> من
-        <span id="totalSteps">4</span>
-      </p>
-
-      <div class="wizard-progress">
-        <div class="wizard-progress-bar" id="progressBar"></div>
-      </div>
 
       <?php if (!empty($errors)): ?>
         <div class="error-box">
@@ -66,25 +57,31 @@ unset($_SESSION['errors'], $_SESSION['old']);
 
       <form id="surveyForm" action="../handlers/signup.php" method="POST">
 
-        <div class="form-step active">
-          <h2 class="step-title">ما نوع العلاج الذي تبحث عنه؟</h2>
-          <div class="field-group">
-            <label class="option-line">
-              <input type="radio" name="treatment_type" value="علاج فردي" required <?= ($old['treatment_type'] ?? '') === 'علاج فردي' ? 'checked' : '' ?> />
-              <span>علاج فردي</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="treatment_type" value="علاج زوجي" <?= ($old['treatment_type'] ?? '') === 'علاج زوجي' ? 'checked' : '' ?> />
-              <span>علاج زوجي</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="treatment_type" value="علاج سلوكي للأطفال والمراهقين" <?= ($old['treatment_type'] ?? '') === 'علاج سلوكي للأطفال والمراهقين' ? 'checked' : '' ?> />
-              <span>علاج سلوكي للأطفال والمراهقين</span>
-            </label>
-          </div>
-        </div>
+        <!-- Hidden survey fields (populated from sessionStorage) -->
+        <input type="hidden" name="survey_treatment_type" id="survey_treatment_type" />
+        <input type="hidden" name="survey_symptoms" id="survey_symptoms" />
+        <input type="hidden" name="survey_repeated_symptoms" id="survey_repeated_symptoms" />
+        <input type="hidden" name="survey_prev_therapy" id="survey_prev_therapy" />
+        <input type="hidden" name="survey_age" id="survey_age" />
+        <input type="hidden" name="survey_gender" id="survey_gender" />
+        <input type="hidden" name="survey_nationality" id="survey_nationality" />
+        <input type="hidden" name="survey_therapist_gender" id="survey_therapist_gender" />
+        <input type="hidden" name="survey_family_history" id="survey_family_history" />
+        <input type="hidden" name="survey_physical_issues" id="survey_physical_issues" />
+        <input type="hidden" name="survey_physical_details" id="survey_physical_details" />
+        <input type="hidden" name="survey_marital_status" id="survey_marital_status" />
+        <input type="hidden" name="survey_education_level" id="survey_education_level" />
+        <input type="hidden" name="survey_smoking" id="survey_smoking" />
+        <input type="hidden" name="survey_alcohol" id="survey_alcohol" />
+        <input type="hidden" name="survey_drugs" id="survey_drugs" />
+        <input type="hidden" name="survey_contact_preference" id="survey_contact_preference" />
 
-        <div class="form-step ">
+        <!-- Hidden client preferences (required by handler; defaults applied) -->
+        <input type="hidden" name="treatment_type" id="treatment_type" value="INDIVIDUAL_THERAPY" />
+        <input type="hidden" name="session_type" value="BOTH" />
+        <input type="hidden" name="session_time" value="FLEXIBLE" />
+
+        <div class="form-step active">
           <h2 class="step-title">المعلومات الشخصية</h2>
 
           <div class="field-group">
@@ -125,49 +122,9 @@ unset($_SESSION['errors'], $_SESSION['old']);
               required
             />
           </div>
-        </div>
 
-        <div class="form-step">
-          <h2 class="step-title">ما هو نوع الجلسة المفضل؟</h2>
-
-          <div class="field-group">
-            <label class="option-line">
-              <input type="radio" name="session_type" value="جلسات عن بعد" required <?= ($old['session_type'] ?? '') === 'جلسات عن بعد' ? 'checked' : '' ?> />
-              <span>جلسات عن بعد</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="session_type" value="جلسات حضورية" <?= ($old['session_type'] ?? '') === 'جلسات حضورية' ? 'checked' : '' ?> />
-              <span>جلسات حضورية</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="session_type" value="كلاهما" <?= ($old['session_type'] ?? '') === 'كلاهما' ? 'checked' : '' ?> />
-              <span>كلاهما</span>
-            </label>
-          </div>
-
-          <h2 class="step-title">ما هو الوقت المفضل للجلسات؟</h2>
-          <div class="field-group time-grid">
-            <label class="option-line">
-              <input type="radio" name="session_time" value="صباحاً" required <?= ($old['session_time'] ?? '') === 'صباحاً' ? 'checked' : '' ?> />
-              <span>صباحاً</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="session_time" value="ظهراً" <?= ($old['session_time'] ?? '') === 'ظهراً' ? 'checked' : '' ?> />
-              <span>ظهراً</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="session_time" value="مساءً" <?= ($old['session_time'] ?? '') === 'مساءً' ? 'checked' : '' ?> />
-              <span>مساءً</span>
-            </label>
-            <label class="option-line">
-              <input type="radio" name="session_time" value="مرن" <?= ($old['session_time'] ?? '') === 'مرن' ? 'checked' : '' ?> />
-              <span>مرن</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-step">
           <h2 class="step-title">إنشاء حساب</h2>
+
           <div class="field-group">
             <label class="field-label" for="username">اسم المستخدم</label>
             <input
@@ -206,76 +163,89 @@ unset($_SESSION['errors'], $_SESSION['old']);
             />
           </div>
         </div>
-      <div class="wizard-buttons">
-        <button type="button" id="prevBtn" class="btn secondary" disabled>السابق</button>
-        <button type="button" id="nextBtn" class="btn primary">التالي</button>
-        <button type="submit" id="submitBtn" class="btn primary" style="display:none;">إنشاء حساب</button>
-      </div>
+
+        <div class="wizard-buttons">
+          <button type="submit" id="submitBtn" class="btn primary">إنشاء حساب</button>
+        </div>
       </form>
 
-        <p class="login-hint">
-    لديك حساب بالفعل؟ <a href="../login/index.php" class="link">تسجيل الدخول</a>
-</p>
+      <p class="login-hint">
+        لديك حساب بالفعل؟ <a href="../login/index.php" class="link">تسجيل الدخول</a>
+      </p>
     </section>
   </main>
 
-  
+
   <footer class="main-footer">
-    © 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
+    &copy; 2026 ذات للاستشارات النفسية جميع الحقوق محفوظة.
   </footer>
 
-  <script src="main.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const nextBtn = document.getElementById("nextBtn");
-      const submitBtn = document.getElementById("submitBtn");
       const form = document.getElementById("surveyForm");
-      const steps = document.querySelectorAll(".form-step");
-      const total = steps.length;
+      const submitBtn = document.getElementById("submitBtn");
 
-      // Override showStep to toggle next/submit buttons
-      const observer = new MutationObserver(() => {
-        const activeIndex = Array.from(steps).findIndex(s => s.classList.contains("active"));
-        if (activeIndex === total - 1) {
-          nextBtn.style.display = "none";
-          submitBtn.style.display = "inline-block";
-        } else {
-          nextBtn.style.display = "inline-block";
-          submitBtn.style.display = "none";
-        }
-      });
+      const surveyRaw = sessionStorage.getItem("surveyData");
+      if (surveyRaw) {
+        try {
+          const survey = JSON.parse(surveyRaw);
+          const fieldMap = {
+            treatment_type: "survey_treatment_type",
+            symptoms: "survey_symptoms",
+            repeated_symptoms: "survey_repeated_symptoms",
+            prev_therapy: "survey_prev_therapy",
+            age: "survey_age",
+            gender: "survey_gender",
+            nationality: "survey_nationality",
+            therapist_gender: "survey_therapist_gender",
+            family_history: "survey_family_history",
+            physical_issues: "survey_physical_issues",
+            physical_details: "survey_physical_details",
+            marital_status: "survey_marital_status",
+            education_level: "survey_education_level",
+            smoking: "survey_smoking",
+            alcohol: "survey_alcohol",
+            drugs: "survey_drugs",
+            contact_preference: "survey_contact_preference"
+          };
 
-      steps.forEach(step => observer.observe(step, { attributes: true, attributeFilter: ["class"] }));
-
-      // Validate last step and submit
-      submitBtn.addEventListener("click", function () {
-        const lastStep = steps[total - 1];
-        const passwordInput = document.getElementById("password");
-        const confirmInput = document.getElementById("confirmPassword");
-
-        // Check required fields
-        const inputs = lastStep.querySelectorAll("input[required]");
-        for (const input of inputs) {
-          if (input.value.trim() === "") {
-            alert("رجاءً املأ جميع الحقول.");
-            input.focus();
-            return;
+          for (const [key, id] of Object.entries(fieldMap)) {
+            const el = document.getElementById(id);
+            if (el && survey[key] !== undefined) {
+              el.value = survey[key];
+            }
           }
-        }
 
-        if (passwordInput.value.length < 8) {
+          if (survey.treatment_type) {
+            const tt = document.getElementById("treatment_type");
+            if (tt) tt.value = survey.treatment_type;
+          }
+        } catch (e) {
+          console.error("Error parsing survey data:", e);
+        }
+      }
+
+      form.addEventListener("submit", function (e) {
+        const password = document.getElementById("password").value;
+        const confirm = document.getElementById("confirmPassword").value;
+
+        if (password.length < 8) {
+          e.preventDefault();
           alert("كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل.");
-          passwordInput.focus();
           return;
         }
 
-        if (passwordInput.value !== confirmInput.value) {
+        if (password !== confirm) {
+          e.preventDefault();
           alert("كلمتا المرور غير متطابقتين.");
-          confirmInput.focus();
           return;
         }
 
-        form.submit();
+        if (!document.getElementById("survey_gender").value) {
+          e.preventDefault();
+          alert("يرجى إكمال الاستبيان أولاً قبل إنشاء الحساب.");
+          window.location.href = "../signup/index.php";
+        }
       });
     });
   </script>

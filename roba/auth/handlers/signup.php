@@ -14,9 +14,30 @@ $phone = strip_tags(trim($_POST['phone'] ?? ''));
 $username = strip_tags(trim($_POST['username'] ?? ''));
 $password = $_POST['password'] ?? '';
 $confirmPassword = $_POST['confirmPassword'] ?? '';
+
 $treatmentType = strip_tags(trim($_POST['treatment_type'] ?? ''));
 $sessionType = strip_tags(trim($_POST['session_type'] ?? ''));
 $sessionTime = strip_tags(trim($_POST['session_time'] ?? ''));
+
+$surveyTreatmentType = strip_tags(trim($_POST['survey_treatment_type'] ?? ''));
+$surveySymptoms = strip_tags(trim($_POST['survey_symptoms'] ?? ''));
+$surveyRepeatedSymptoms = strip_tags(trim($_POST['survey_repeated_symptoms'] ?? ''));
+$surveyPrevTherapy = strip_tags(trim($_POST['survey_prev_therapy'] ?? ''));
+$surveyAge = intval($_POST['survey_age'] ?? 0);
+$surveyGender = strip_tags(trim($_POST['survey_gender'] ?? ''));
+$surveyNationality = strip_tags(trim($_POST['survey_nationality'] ?? ''));
+$surveyTherapistGender = strip_tags(trim($_POST['survey_therapist_gender'] ?? ''));
+$surveyFamilyHistory = strip_tags(trim($_POST['survey_family_history'] ?? ''));
+$surveyPhysicalIssues = strip_tags(trim($_POST['survey_physical_issues'] ?? ''));
+$surveyPhysicalDetails = strip_tags(trim($_POST['survey_physical_details'] ?? ''));
+$surveyMaritalStatus = strip_tags(trim($_POST['survey_marital_status'] ?? ''));
+$surveyEducationLevel = strip_tags(trim($_POST['survey_education_level'] ?? ''));
+$surveySmoking = strip_tags(trim($_POST['survey_smoking'] ?? ''));
+$surveyAlcohol = strip_tags(trim($_POST['survey_alcohol'] ?? ''));
+$surveyDrugs = strip_tags(trim($_POST['survey_drugs'] ?? ''));
+$surveyContactPreference = strip_tags(trim($_POST['survey_contact_preference'] ?? ''));
+
+$prevTherapyBool = ($surveyPrevTherapy === 'YES') ? 1 : 0;
 
 $errors = [];
 
@@ -82,23 +103,80 @@ if ($stmt->get_result()->num_rows > 0) {
 }
 $stmt->close();
 
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-$role = 'CLIENT';
+$conn->begin_transaction();
 
-$stmt = $conn->prepare("INSERT INTO users (name, email, phone, username, password, role) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssssss", $fullName, $email, $phone, $username, $hashedPassword, $role);
+try {
+    $stmt = $conn->prepare("
+        INSERT INTO client_surveys
+            (treatment_type, symptoms, repeated_symptoms, prev_therapy, age, gender, nationality,
+             therapist_gender, family_history, physical_issues, physical_details, marital_status,
+             education_level, smoking, alcohol, drugs, contact_preference)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param(
+        "sssississssssssss",
+        $surveyTreatmentType,
+        $surveySymptoms,
+        $surveyRepeatedSymptoms,
+        $prevTherapyBool,
+        $surveyAge,
+        $surveyGender,
+        $surveyNationality,
+        $surveyTherapistGender,
+        $surveyFamilyHistory,
+        $surveyPhysicalIssues,
+        $surveyPhysicalDetails,
+        $surveyMaritalStatus,
+        $surveyEducationLevel,
+        $surveySmoking,
+        $surveyAlcohol,
+        $surveyDrugs,
+        $surveyContactPreference
+    );
+    $stmt->execute();
+    $surveyId = $stmt->insert_id;
+    $stmt->close();
 
-if ($stmt->execute()) {
-    $_SESSION['user_id'] = $stmt->insert_id;
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    $role = 'CLIENT';
+
+    $stmt = $conn->prepare("INSERT INTO users (name, email, phone, username, password, role) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $fullName, $email, $phone, $username, $hashedPassword, $role);
+    $stmt->execute();
+    $userId = $stmt->insert_id;
+    $stmt->close();
+
+    $stmt = $conn->prepare("
+        INSERT INTO clients (client_id, survey_id, gender, treatment_type, preferred_session_type, preferred_session_time)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param(
+        "iissss",
+        $userId,
+        $surveyId,
+        $surveyGender,
+        $treatmentType,
+        $sessionType,
+        $sessionTime
+    );
+    $stmt->execute();
+    $stmt->close();
+
+    $conn->commit();
+
+    $_SESSION['user_id'] = $userId;
     $_SESSION['user_name'] = $fullName;
+    $_SESSION['role'] = $role;
     header("Location: ../../homepage/index.php");
     exit;
-} else {
+
+} catch (Exception $e) {
+    $conn->rollback();
     $_SESSION['errors'] = ["حدث خطأ أثناء التسجيل، حاول مرة أخرى"];
+    $_SESSION['old'] = $oldData;
     header("Location: ../sendpage/index.php");
     exit;
 }
 
-$stmt->close();
 $conn->close();
 ?>

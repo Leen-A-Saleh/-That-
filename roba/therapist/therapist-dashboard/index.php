@@ -10,29 +10,20 @@ require_once __DIR__ . '/../../connection.php';
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? '';
 
-// Get therapist_id from user_id
-$stmt = $conn->prepare("SELECT therapist_id FROM therapists WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$therapist_row = $stmt->get_result()->fetch_assoc();
-$stmt->close();
-$therapist_id = $therapist_row['therapist_id'] ?? 0;
+$therapist_id = $user_id;
 
-// Total cases
 $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM cases WHERE therapist_id = ?");
 $stmt->bind_param("i", $therapist_id);
 $stmt->execute();
 $total_cases = $stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
-// Active cases (not ON_HOLD or RECOVERED)
 $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM cases WHERE therapist_id = ? AND status IN ('NEW','IN_ASSESSMENT','IN_THERAPY')");
 $stmt->bind_param("i", $therapist_id);
 $stmt->execute();
 $active_cases = $stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
-// Today's appointments
 $today = date('Y-m-d');
 $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM appointments WHERE therapist_id = ? AND DATE(date_time) = ? AND status != 'CANCELLED'");
 $stmt->bind_param("is", $therapist_id, $today);
@@ -40,21 +31,19 @@ $stmt->execute();
 $today_appointments = $stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
-// Pending requests
 $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM appointments WHERE therapist_id = ? AND status = 'REQUESTED'");
 $stmt->bind_param("i", $therapist_id);
 $stmt->execute();
 $pending_requests = $stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
-// Upcoming appointments (confirmed, from now onward, limit 5)
 $now = date('Y-m-d H:i:s');
 $stmt = $conn->prepare("
     SELECT a.appointment_id, a.date_time, a.status, u.name AS client_name,
            CASE WHEN s.session_id IS NOT NULL THEN 'جلسة متابعة' ELSE 'جلسة أولى' END AS session_type
     FROM appointments a
     JOIN clients c ON a.client_id = c.client_id
-    JOIN users u ON c.user_id = u.user_id
+    JOIN users u ON c.client_id = u.user_id
     LEFT JOIN sessions s ON s.case_id = a.case_id AND s.session_id != (
         SELECT MAX(s2.session_id) FROM sessions s2 WHERE s2.case_id = a.case_id
     )
@@ -67,12 +56,11 @@ $stmt->execute();
 $upcoming_appointments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// New requests (REQUESTED appointments, limit 5)
 $stmt = $conn->prepare("
     SELECT a.appointment_id, a.date_time, u.name AS client_name, a.mode
     FROM appointments a
     JOIN clients c ON a.client_id = c.client_id
-    JOIN users u ON c.user_id = u.user_id
+    JOIN users u ON c.client_id = u.user_id
     WHERE a.therapist_id = ? AND a.status = 'REQUESTED'
     ORDER BY a.created_at DESC
     LIMIT 5
@@ -82,12 +70,11 @@ $stmt->execute();
 $new_requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Recent cases (latest 3)
 $stmt = $conn->prepare("
     SELECT cs.case_id, cs.title AS condition_name, cs.status, cs.created_at, u.name AS client_name
     FROM cases cs
     JOIN clients c ON cs.client_id = c.client_id
-    JOIN users u ON c.user_id = u.user_id
+    JOIN users u ON c.client_id = u.user_id
     WHERE cs.therapist_id = ?
     ORDER BY cs.created_at DESC
     LIMIT 3
@@ -97,7 +84,6 @@ $stmt->execute();
 $recent_cases = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Helper: format Arabic time
 function formatArabicTime($datetime) {
     $ts = strtotime($datetime);
     $hour = (int)date('g', $ts);
@@ -106,7 +92,6 @@ function formatArabicTime($datetime) {
     return "$hour:$min $ampm";
 }
 
-// Helper: time ago in Arabic
 function timeAgo($datetime) {
     $diff = time() - strtotime($datetime);
     if ($diff < 60) return 'الآن';
@@ -116,7 +101,6 @@ function timeAgo($datetime) {
     return 'منذ ' . floor($diff / 604800) . ' أسبوع';
 }
 
-// Helper: first letter of Arabic name
 function firstLetter($name) {
     return mb_substr(trim($name), 0, 1, 'UTF-8');
 }
@@ -292,7 +276,6 @@ function firstLetter($name) {
           <p class="muted" style="text-align:center; padding:20px;">لا توجد حالات حديثة</p>
         <?php else: ?>
           <?php
-          // Map case status to progress percentage
           $status_progress = [
               'NEW' => 10,
               'IN_ASSESSMENT' => 35,

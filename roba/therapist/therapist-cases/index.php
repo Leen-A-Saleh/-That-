@@ -10,19 +10,11 @@ require_once __DIR__ . '/../../connection.php';
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? '';
 
-// Get therapist_id
-$stmt = $conn->prepare("SELECT therapist_id FROM therapists WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$therapist_row = $stmt->get_result()->fetch_assoc();
-$stmt->close();
-$therapist_id = $therapist_row['therapist_id'] ?? 0;
+$therapist_id = $user_id;
 
-// Read filter & search from GET params
 $current_filter = $_GET['filter'] ?? 'all';
 $current_search = trim($_GET['search'] ?? '');
 
-// Build query with filters
 $sql = "
     SELECT cs.case_id, cs.title, cs.status, cs.priority, cs.created_at,
            u.name AS client_name, c.date_of_birth,
@@ -30,7 +22,7 @@ $sql = "
            MAX(s.start_time) AS last_session
     FROM cases cs
     JOIN clients c ON cs.client_id = c.client_id
-    JOIN users u ON c.user_id = u.user_id
+    JOIN users u ON c.client_id = u.user_id
     LEFT JOIN sessions s ON s.case_id = cs.case_id
     WHERE cs.therapist_id = ?
 ";
@@ -61,7 +53,6 @@ $stmt->close();
 
 $total_count = count($cases);
 
-// Filter labels for the button text
 $filter_labels = [
     'all' => 'جميع الحالات',
     'active' => 'نشطة',
@@ -70,7 +61,6 @@ $filter_labels = [
     'high' => 'حدة عالية',
 ];
 
-// Helpers
 function calcAge($dob) {
     if (!$dob) return null;
     return (int) date_diff(date_create($dob), date_create('today'))->y;
@@ -94,7 +84,6 @@ $status_progress = [
     'NEW' => 10, 'IN_ASSESSMENT' => 35, 'IN_THERAPY' => 60,
     'ON_HOLD' => 50, 'RECOVERED' => 100
 ];
-// Map status to filter data-status value
 $status_filter = [
     'NEW' => 'active', 'IN_ASSESSMENT' => 'active', 'IN_THERAPY' => 'active',
     'ON_HOLD' => 'hold', 'RECOVERED' => 'recovered'
