@@ -1,0 +1,59 @@
+# Current Project State
+
+## What this project is about
+- This is a multi-role mental health counseling platform (Arabic UI) called "ذات".
+- It supports three main user roles: client, therapist, and admin.
+- The product intent appears to be online psychological counseling with booking, case tracking, messaging, assessments, activities, and notifications.
+
+## Current high-level structure
+- `Homepage/`: public landing page (`index.php`) + `img/`, `main.js`, `style.css`.
+- `Auth/`: login/signup/forgot-password flows (`loginpage/`, `signuppage/`, `forgetpage/`, `sendpage/`) + shared `img/`.
+- `Client/`: client experience pages (`client-*-page/`), plus `images/` and shared layout bits in `partials/`.
+- `Therapist/`: therapist experience pages (`therapist-*-page/` and similarly named folders).
+- `Admin/`: admin experience pages (`admin-*-page/`) + `images/`.
+- `Database/`: backend helper layer (`config.php`, `db.php`, `helpers.php`, `auth.php`) + role placeholders (`admin.php`, `client.php`) + schema dump `ThatDB - Copy.sql`.
+- Shared styling/scripts at root level: `total.css`, `total.js`, `therapist.css`.
+
+## Database state (from `Database/ThatDB - Copy.sql`)
+- Database is modeled well for the domain and includes major entities:
+  - Identity and roles: `users`, `clients`, `therapists`.
+  - Care operations: `cases`, `appointments`, `sessions`, `messages`.
+  - Therapy tools: `activities`, `case_activities`, `activity_submissions`.
+  - Assessments/tests: `assessments`, `assessment_results`, `focus_tests`, `focus_results`.
+  - System events: `alerts`, `notifications`.
+  - Signup survey capture: `client_surveys`.
+- Foreign keys and indexes are present across most relationships.
+- Important issue found: `client_surveys` has a SQL syntax problem (missing comma after `education_level`), which will break schema execution unless fixed. (In the file, this is the line before `smoking`.)
+
+## File-state observations (working tree)
+- The repository is in a major migration/refactor state:
+  - Legacy folders/files are being removed and replaced with a cleaner role-based structure (`Admin/`, `Auth/`, `Client/`, `Therapist/`, `Homepage/`, `Database/`).
+  - Many assets/pages appear to have been moved/renamed (folders and filenames include spaces/typos in places), so internal links can easily drift.
+
+## Backend implementation status
+- `Database/config.php` and `Database/db.php` are present and functional for PDO connection (via `db()`).
+- `Database/helpers.php` provides:
+  - output escaping helper `e()`
+  - session bootstrap `start_secure_session()`
+  - redirects + flash messages
+  - CSRF token generation + verification helpers
+- `Database/auth.php` has working auth primitives:
+  - login (`login_user`), logout (`logout_user`), guards (`require_auth`, `require_role`)
+  - role-based home routing (`role_home_path`) pointing to `Admin/...admin-dashboard.php`, `Therapist/...therapist-control.php`, and `Client/.../index.php`
+  - handlers for login, forgot-password (currently “soft” flow), and signup survey + signup send (creates DB rows for `users` + `clients`, and stores survey in `client_surveys`)
+- `Database/admin.php` and `Database/client.php` currently exist but are empty placeholders.
+- Many role pages still look primarily UI-driven; not all pages are visibly wired to the new auth/session helpers yet.
+
+## Key concerns and risks
+- Route mismatch risk: role folders/pages were reorganized; any hardcoded links to older paths will break.
+- Migration consistency risk: large rename/move operations can leave broken asset and navigation paths, especially with inconsistent folder naming.
+- Naming consistency risk: typo-heavy filenames/folders (for example `forgetpassord`, `therapest`, `massege`) make maintenance and routing error-prone.
+- Security/config concern: DB credentials are stored in repo config (`Database/config.php`) and should be environment-based before production.
+- Database bootstrap risk: schema currently has at least one syntax error, so setup may fail in a fresh environment.
+
+## Recommended next stabilization steps
+1. Fix SQL syntax in `client_surveys` and validate full schema import on a clean database.
+2. Normalize routes/links so all navigation targets existing `.php` files and current folder names (`Admin/`, `Auth/`, `Client/`, `Therapist/`, `Homepage/`).
+3. Adopt a single shared bootstrap include (session + db + helpers + auth) and include it across pages consistently.
+4. Wire up guards (`require_auth`/`require_role`) on role pages that should be protected.
+5. Run a broken-link pass for moved assets/pages after migration finishes.

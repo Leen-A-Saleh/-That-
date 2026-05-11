@@ -1,0 +1,618 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/db.php';
+
+// Login
+
+function login_user(string $email, string $password): bool
+{
+    $email = trim($email);
+    if ($email === '' || $password === '') {
+        return false;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT user_id, name, username, email, password, role, is_active, avatar
+         FROM users
+         WHERE email = :email
+         LIMIT 1'
+    );
+    $stmt->execute(['email' => $email]);
+    $user = $stmt->fetch();
+
+    if (!$user || (int) ($user['is_active'] ?? 1) !== 1) {
+        return false;
+    }
+
+    if (!password_verify($password, (string) $user['password'])) {
+        return false;
+    }
+
+    session_regenerate_id(true);
+    $avatarRaw = trim((string) ($user['avatar'] ?? ''));
+    $_SESSION['auth'] = [
+        'user_id' => (int) $user['user_id'],
+        'name' => (string) $user['name'],
+        'username' => (string) $user['username'],
+        'email' => (string) $user['email'],
+        'role' => strtoupper((string) $user['role']),
+        'avatar' => $avatarRaw !== '' ? $avatarRaw : null,
+        'logged_at' => time(),
+    ];
+    $_SESSION['user_id'] = $_SESSION['auth']['user_id'];
+    $_SESSION['user_name'] = $_SESSION['auth']['name'];
+    $_SESSION['user_email'] = $_SESSION['auth']['email'];
+    $_SESSION['user_role'] = $_SESSION['auth']['role'];
+
+    record_login_activity((int) $user['user_id']);
+
+    return true;
+}
+
+//  Login activity
+
+function request_client_ip(): string
+{
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $ip = trim((string) $_SERVER['HTTP_CF_CONNECTING_IP']);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        foreach (explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR']) as $part) {
+            $ip = trim($part);
+            if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+    }
+    $remote = trim((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    return $remote !== '' ? $remote : '0.0.0.0';
+}
+
+/**
+ * @return array{browser: string, os: string}
+ */
+function parse_login_user_agent(string $userAgent): array
+{
+    $ua = $userAgent !== '' ? $userAgent : 'Unknown';
+    $browser = 'Unknown';
+    $os = 'Unknown';
+
+    if (preg_match('/Windows NT 10\.0/i', $ua)) {
+        $os = 'Windows 10/11';
+    } elseif (preg_match('/Windows NT 6\.3/i', $ua)) {
+        $os = 'Windows 8.1';
+    } elseif (preg_match('/Windows NT 6\.2/i', $ua)) {
+        $os = 'Windows 8';
+    } elseif (preg_match('/Windows NT 6\.1/i', $ua)) {
+        $os = 'Windows 7';
+    } elseif (preg_match('/Windows/i', $ua)) {
+        $os = 'Windows';
+    } elseif (preg_match('/Mac OS X ([\d_]+)/i', $ua, $m)) {
+        $os = 'macOS ' . str_replace('_', '.', $m[1]);
+    } elseif (preg_match('/Android ([\d.]+)/i', $ua, $m)) {
+        $os = 'Android ' . $m[1];
+    } elseif (preg_match('/(?:CPU )?iPhone OS ([\d_]+)/i', $ua, $m)) {
+        $os = 'iOS ' . str_replace('_', '.', $m[1]);
+    } elseif (preg_match('/Linux/i', $ua)) {
+        $os = 'Linux';
+    }
+
+    if (preg_match('/Edg(?:e|A|iOS)?\/([\d.]+)/i', $ua, $m)) {
+        $browser = 'Edge ' . $m[1];
+    } elseif (preg_match('/OPR\/([\d.]+)/i', $ua, $m)) {
+        $browser = 'Opera ' . $m[1];
+    } elseif (preg_match('/CriOS\/([\d.]+)/i', $ua, $m)) {
+        $browser = 'Chrome (iOS) ' . $m[1];
+    } elseif (preg_match('/Chrome\/([\d.]+)/i', $ua, $m) && !preg_match('/Edg|OPR/i', $ua)) {
+        $browser = 'Chrome ' . $m[1];
+    } elseif (preg_match('/Firefox\/([\d.]+)/i', $ua, $m)) {
+        $browser = 'Firefox ' . $m[1];
+    } elseif (preg_match('/Version\/([\d.]+).*Safari/i', $ua, $m) && preg_match('/Safari/i', $ua) && !preg_match('/Chrome/i', $ua)) {
+        $browser = 'Safari ' . $m[1];
+    } elseif (preg_match('/MSIE ([\d.]+)/i', $ua, $m) || preg_match('/Trident\/.*rv:([\d.]+)/i', $ua, $m)) {
+        $browser = 'Internet Explorer ' . $m[1];
+    }
+
+    return [
+        'browser' => mb_substr($browser, 0, 100),
+        'os' => mb_substr($os, 0, 100),
+    ];
+}
+
+/**
+ *
+ *
+ * @return array{country: ?string, city: ?string}
+ */
+function geolocate_ip_for_login(string $ip): array
+{
+    if ($ip === '' || $ip === '0.0.0.0') {
+        return ['country' => null, 'city' => null];
+    }
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+        return ['country' => null, 'city' => null];
+    }
+
+    $url = 'http://ip-api.com/json/' . rawurlencode($ip) . '?fields=status,country,city';
+    $ctx = stream_context_create([
+        'http' => [
+            'timeout' => 1.5,
+            'ignore_errors' => true,
+        ],
+    ]);
+    $json = @file_get_contents($url, false, $ctx);
+    if ($json === false) {
+        return ['country' => null, 'city' => null];
+    }
+    $data = json_decode($json, true);
+    if (!is_array($data) || ($data['status'] ?? '') !== 'success') {
+        return ['country' => null, 'city' => null];
+    }
+
+    $country = isset($data['country']) ? trim((string) $data['country']) : '';
+    $city = isset($data['city']) ? trim((string) $data['city']) : '';
+
+    return [
+        'country' => $country !== '' ? mb_substr($country, 0, 100) : null,
+        'city' => $city !== '' ? mb_substr($city, 0, 100) : null,
+    ];
+}
+
+function record_login_activity(int $userId): void
+{
+    try {
+        $ip = request_client_ip();
+        $ua = parse_login_user_agent((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+        $geo = geolocate_ip_for_login($ip);
+        $now = new DateTimeImmutable('now');
+        $stmt = db()->prepare(
+            'INSERT INTO login_activities
+                (user_id, login_date, login_time, browser, os, ip_address, country, city)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $userId,
+            $now->format('Y-m-d'),
+            $now->format('H:i:s'),
+            $ua['browser'],
+            $ua['os'],
+            mb_substr($ip, 0, 45),
+            $geo['country'],
+            $geo['city'],
+        ]);
+    } catch (\Throwable $e) {
+        // Do not block sign-in if logging fails (schema mismatch, DB down, etc.)
+    }
+}
+
+// Logout 
+
+function logout_user(): void
+{
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'] ?? '', (bool) $params['secure'], (bool) $params['httponly']);
+    }
+
+    session_destroy();
+}
+
+/**
+ */
+function handle_logout_post(?string $redirectTo = null): void
+{
+    start_secure_session();
+
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        return;
+    }
+
+    if (($_POST['action'] ?? null) !== 'logout') {
+        return;
+    }
+
+    if (!verify_csrf($_POST['csrf_token'] ?? null)) {
+        set_flash('error', 'انتهت صلاحية الطلب. أعد المحاولة.');
+        redirect($_SERVER['REQUEST_URI'] ?? '/');
+    }
+
+    logout_user();
+
+    redirect($redirectTo ?: '/That-Copy/Auth/login/index.php');
+}
+
+// Session helpers 
+
+function current_user(): ?array
+{
+    return $_SESSION['auth'] ?? null;
+}
+
+function is_authenticated(): bool
+{
+    return isset($_SESSION['auth']['user_id']);
+}
+
+function require_auth(): void
+{
+    if (!is_authenticated()) {
+        redirect('/That-Copy/Auth/login/index.php');
+    }
+}
+
+function require_role(array $roles): void
+{
+    require_auth();
+    $userRole = strtoupper((string) ($_SESSION['auth']['role'] ?? ''));
+    $allowed = array_map(static fn(string $r): string => strtoupper($r), $roles);
+
+    if (!in_array($userRole, $allowed, true)) {
+        http_response_code(403);
+        exit('Forbidden');
+    }
+}
+
+/** Admin UI and admin-only endpoints: login required, role must be ADMIN. */
+function require_admin(): void
+{
+    require_auth();
+    $userRole = strtoupper((string) ($_SESSION['auth']['role'] ?? ''));
+    if ($userRole !== 'ADMIN') {
+        redirect(role_home_path($userRole));
+    }
+}
+
+//  Existence checks 
+
+function username_exists(string $username): bool
+{
+    $stmt = db()->prepare('SELECT 1 FROM users WHERE username = ? LIMIT 1');
+    $stmt->execute([trim($username)]);
+    return (bool) $stmt->fetchColumn();
+}
+
+function email_exists(string $email): bool
+{
+    $stmt = db()->prepare('SELECT 1 FROM users WHERE email = ? LIMIT 1');
+    $stmt->execute([trim($email)]);
+    return (bool) $stmt->fetchColumn();
+}
+
+// Role routing 
+
+function role_home_path(string $role): string
+{
+    $role = strtoupper($role);
+    if ($role === 'ADMIN') {
+        return '/That-Copy/Admin/admin-dashboard-page/admin-dashboard.php';
+    }
+    if ($role === 'THERAPIST') {
+        return '/That-Copy/TherapistPHP/therapist/therapist-dashboard/index.php';
+    }
+    return '/That-Copy/Client/client-dashboard-page/index.php';
+}
+
+
+//  Login handler 
+
+function process_login_request(array $post): array
+{
+    $errors = [];
+
+    if (!verify_csrf($post['csrf_token'] ?? null)) {
+        $errors[] = 'انتهت صلاحية الطلب. أعد المحاولة.';
+        return $errors;
+    }
+
+    $email = trim((string) ($post['email'] ?? ''));
+    $password = (string) ($post['password'] ?? '');
+
+    if ($email === '') {
+        $errors[] = 'البريد الإلكتروني مطلوب.';
+        return $errors;
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'البريد الإلكتروني غير صالح.';
+        return $errors;
+    }
+
+    if (!login_user($email, $password)) {
+        $errors[] = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+        return $errors;
+    }
+
+    $role = strtoupper((string) ($_SESSION['auth']['role'] ?? 'CLIENT'));
+    redirect(role_home_path($role));
+    return [];
+}
+
+//  Signup (full single-POST) 
+
+function process_full_signup(array $post): array
+{
+    $errors = [];
+
+    if (!verify_csrf($post['csrf_token'] ?? null)) {
+        return ['انتهت صلاحية الطلب، يرجى المحاولة مرة أخرى.'];
+    }
+
+    // Personal info
+    $fullName = trim((string) ($post['fullName'] ?? ''));
+    $email = trim((string) ($post['email'] ?? ''));
+    $phone = trim((string) ($post['phone'] ?? ''));
+    $username = trim((string) ($post['username'] ?? ''));
+    $password = (string) ($post['password'] ?? '');
+    $confirmPassword = (string) ($post['confirmPassword'] ?? '');
+
+    // Client preferences
+    $treatmentType = trim((string) ($post['treatment_type'] ?? ''));
+    $sessionType = trim((string) ($post['session_type'] ?? 'BOTH'));
+    $sessionTime = trim((string) ($post['session_time'] ?? 'FLEXIBLE'));
+
+    // Survey fields
+    $surveyTreatmentType = trim((string) ($post['survey_treatment_type'] ?? ''));
+    $surveySymptoms = trim((string) ($post['survey_symptoms'] ?? ''));
+    $surveyRepeatedSymptoms = trim((string) ($post['survey_repeated_symptoms'] ?? ''));
+    $surveyPrevTherapy = trim((string) ($post['survey_prev_therapy'] ?? ''));
+    $surveyAge = (int) ($post['survey_age'] ?? 0);
+    $surveyGender = trim((string) ($post['survey_gender'] ?? ''));
+    $surveyNationality = trim((string) ($post['survey_nationality'] ?? ''));
+    $surveyTherapistGender = trim((string) ($post['survey_therapist_gender'] ?? ''));
+    $surveyFamilyHistory = trim((string) ($post['survey_family_history'] ?? ''));
+    $surveyPhysicalIssues = trim((string) ($post['survey_physical_issues'] ?? ''));
+    $surveyPhysicalDetails = trim((string) ($post['survey_physical_details'] ?? ''));
+    $surveyMaritalStatus = trim((string) ($post['survey_marital_status'] ?? ''));
+    $surveyEducationLevel = trim((string) ($post['survey_education_level'] ?? ''));
+    $surveySmoking = trim((string) ($post['survey_smoking'] ?? ''));
+    $surveyAlcohol = trim((string) ($post['survey_alcohol'] ?? ''));
+    $surveyDrugs = trim((string) ($post['survey_drugs'] ?? ''));
+    $surveyContactPreference = trim((string) ($post['survey_contact_preference'] ?? ''));
+
+    // Validation
+    if ($fullName === '') {
+        $errors[] = 'الاسم الكامل مطلوب.';
+    }
+    if ($email === '') {
+        $errors[] = 'البريد الإلكتروني مطلوب.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'البريد الإلكتروني غير صالح.';
+    }
+    if ($phone === '') {
+        $errors[] = 'رقم الهاتف مطلوب.';
+    }
+    if ($username === '') {
+        $errors[] = 'اسم المستخدم مطلوب.';
+    } elseif (username_exists($username)) {
+        $errors[] = 'اسم المستخدم مستخدم مسبقاً.';
+    }
+    if (email_exists($email)) {
+        $errors[] = 'البريد الإلكتروني مسجل مسبقاً.';
+    }
+    if (mb_strlen($password) < 8) {
+        $errors[] = 'كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل.';
+    }
+    if ($password !== $confirmPassword) {
+        $errors[] = 'كلمتا المرور غير متطابقتين.';
+    }
+    if ($errors !== []) {
+        return $errors;
+    }
+
+    $prevTherapyBool = ($surveyPrevTherapy === 'YES') ? 1 : 0;
+
+    try {
+        db()->beginTransaction();
+
+        // 1. Insert survey
+        $stmt = db()->prepare(
+            'INSERT INTO client_surveys
+                (treatment_type, symptoms, repeated_symptoms, prev_therapy, age, gender, nationality,
+                 therapist_gender, family_history, physical_issues, physical_details, marital_status,
+                 education_level, smoking, alcohol, drugs, contact_preference)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $surveyTreatmentType,
+            $surveySymptoms,
+            $surveyRepeatedSymptoms,
+            $prevTherapyBool,
+            $surveyAge,
+            $surveyGender,
+            $surveyNationality,
+            $surveyTherapistGender,
+            $surveyFamilyHistory,
+            $surveyPhysicalIssues,
+            $surveyPhysicalDetails,
+            $surveyMaritalStatus,
+            $surveyEducationLevel,
+            $surveySmoking,
+            $surveyAlcohol,
+            $surveyDrugs,
+            $surveyContactPreference,
+        ]);
+        $surveyId = (int) db()->lastInsertId();
+
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = db()->prepare(
+            "INSERT INTO users (name, email, phone, username, password, role)
+             VALUES (?, ?, ?, ?, ?, 'CLIENT')"
+        );
+        $stmt->execute([$fullName, $email, $phone, $username, $hashedPassword]);
+        $userId = (int) db()->lastInsertId();
+
+        $clientSql = 'INSERT INTO clients (client_id, survey_id, gender, treatment_type, preferred_session_type, preferred_session_time)
+                      VALUES (?, ?, ?, ?, ?, ?)';
+        db()->prepare($clientSql)->execute([
+            $userId, $surveyId, $surveyGender, $treatmentType, $sessionType, $sessionTime,
+        ]);
+
+        db()->commit();
+
+        set_flash('success', 'تم إنشاء الحساب بنجاح. يمكنك تسجيل الدخول الآن.');
+        return [];
+    } catch (\Throwable $e) {
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+        return ['حدث خطأ أثناء التسجيل، حاول مرة أخرى.'];
+    }
+}
+
+//  Forgot password (real email via PHPMailer) 
+
+function process_forgot_password_request(array $post): array
+{
+    $errors = [];
+
+    if (!verify_csrf($post['csrf_token'] ?? null)) {
+        $errors[] = 'انتهت صلاحية الطلب. حاول مرة أخرى.';
+        return $errors;
+    }
+
+    $email = trim((string) ($post['email'] ?? ''));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'يرجى إدخال بريد إلكتروني صحيح.';
+        return $errors;
+    }
+
+    // Check if email exists
+    $stmt = db()->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
+    $stmt->execute([$email]);
+
+    if ($stmt->fetchColumn()) {
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        $hashedToken = hash('sha256', $token);
+
+        // Remove old tokens
+        $del = db()->prepare('DELETE FROM password_resets WHERE email = ?');
+        $del->execute([$email]);
+
+        // Insert new token
+        $ins = db()->prepare('INSERT INTO password_resets (email, token) VALUES (?, ?)');
+        $ins->execute([$email, $hashedToken]);
+
+        // Send email
+        $config = require __DIR__ . '/config.php';
+        $resetLink = $config['app_url'] . '/Auth/reset-password/index.php?token=' . $token . '&email=' . urlencode($email);
+
+        try {
+            send_reset_email($email, $resetLink, $config);
+        } catch (\Throwable $e) {
+            // Silent fail — don't reveal whether email exists
+        }
+    }
+
+    // Always show success (security: don't reveal if email exists)
+    set_flash('success', 'إذا كان البريد مسجلًا، فسيتم إرسال رابط إعادة التعيين.');
+    return [];
+}
+
+function send_reset_email(string $email, string $resetLink, array $config): void
+{
+    // Try PHPMailer if available
+    $autoloadPaths = [
+        __DIR__ . '/../vendor/autoload.php',
+        __DIR__ . '/../TherapistPHP/vendor/autoload.php',
+    ];
+
+    $autoloaded = false;
+    foreach ($autoloadPaths as $path) {
+        if (file_exists($path)) {
+            require_once $path;
+            $autoloaded = true;
+            break;
+        }
+    }
+
+    if (!$autoloaded || !class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
+        return; // PHPMailer not available
+    }
+
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = $config['mail_host'];
+    $mail->SMTPAuth = true;
+    $mail->Port = $config['mail_port'];
+    $mail->Username = $config['mail_username'];
+    $mail->Password = $config['mail_password'];
+
+    $mail->setFrom($config['mail_from'], $config['mail_from_name']);
+    $mail->addAddress($email);
+    $mail->CharSet = 'UTF-8';
+
+    $mail->isHTML(true);
+    $mail->Subject = 'إعادة تعيين كلمة المرور';
+    $mail->Body = "
+        <div dir='rtl' style='font-family: Cairo, sans-serif;'>
+            <h2>إعادة تعيين كلمة المرور</h2>
+            <p>لقد طلبت إعادة تعيين كلمة المرور. اضغط على الرابط أدناه:</p>
+            <a href='{$resetLink}' style='display:inline-block; padding:10px 20px; background:#36A397; color:#fff; text-decoration:none; border-radius:5px;'>إعادة تعيين كلمة المرور</a>
+            <p style='margin-top:15px; color:#888;'>إذا لم تطلب ذلك، تجاهل هذا البريد.</p>
+        </div>
+    ";
+
+    $mail->send();
+}
+
+// Reset password 
+
+function validate_reset_token(string $token, string $email): bool
+{
+    $hashedToken = hash('sha256', $token);
+    $stmt = db()->prepare(
+        'SELECT email FROM password_resets
+         WHERE email = ? AND token = ? AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)'
+    );
+    $stmt->execute([$email, $hashedToken]);
+    return (bool) $stmt->fetchColumn();
+}
+
+function process_reset_password_request(array $post): array
+{
+    $errors = [];
+
+    if (!verify_csrf($post['csrf_token'] ?? null)) {
+        return ['انتهت صلاحية الطلب. أعد المحاولة.'];
+    }
+
+    $token = trim((string) ($post['token'] ?? ''));
+    $email = trim((string) ($post['email'] ?? ''));
+    $password = (string) ($post['password'] ?? '');
+    $confirmPassword = (string) ($post['confirm_password'] ?? '');
+
+    if ($token === '' || $email === '') {
+        return ['رابط غير صالح.'];
+    }
+
+    if (mb_strlen($password) < 8) {
+        return ['كلمة المرور يجب أن تكون 8 أحرف على الأقل.'];
+    }
+
+    if ($password !== $confirmPassword) {
+        return ['كلمات المرور غير متطابقة.'];
+    }
+
+    if (!validate_reset_token($token, $email)) {
+        return ['الرابط غير صالح أو منتهي الصلاحية.'];
+    }
+
+    // Update password
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = db()->prepare('UPDATE users SET password = ? WHERE email = ?');
+    $stmt->execute([$hashed, $email]);
+
+    // Delete used tokens
+    $del = db()->prepare('DELETE FROM password_resets WHERE email = ?');
+    $del->execute([$email]);
+
+    set_flash('success', 'تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');
+    return [];
+}

@@ -1,0 +1,237 @@
+/**
+ * Booking page only — scoped so ../client-dashboard-page/style.css
+ * does not override .doctor-card (used differently on the home grid).
+ */
+body.page-booking .main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  padding-top: 90px;
+  padding-bottom: 100px;
+}
+
+body.page-booking .booking-section {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 560px;
+}
+
+body.page-booking .booking-form {
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  overflow-y: auto;
+}
+
+body.page-booking .booking-form h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #20a4a9;
+}
+
+body.page-booking .booking-form label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #444;
+  margin-top: 12px;
+}
+
+body.page-booking .booking-form input,
+body.page-booking .booking-form select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  font-size: 14px;
+  font-family: "Cairo", sans-serif;
+  background: #f9fafb;
+  transition: 0.2s;
+  color: #333;
+}
+
+body.page-booking .booking-form input:focus,
+body.page-booking .booking-form select:focus {
+  outline: none;
+  border-color: #20a4a9;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(32, 164, 169, 0.1);
+}
+
+body.page-booking .error-msg {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+body.page-booking #confirmBooking {
+  background: linear-gradient(135deg, #20a4a9, #178a8f);
+  border: none;
+  color: #fff;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: "Cairo", sans-serif;
+  font-weight: 700;
+  margin-top: 18px;
+  transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(32, 164, 169, 0.3);
+}
+
+body.page-booking #confirmBooking:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(32, 164, 169, 0.4);
+}
+
+body.page-booking #confirmBooking:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+body.page-booking .success-msg {
+  background: #e8f8f5;
+  border: 1px solid #20a4a9;
+  border-radius: 10px;
+  padding: 12px;
+  color: #1a7a6e;
+  font-size: 13px;
+  line-height: 1.9;
+  margin-top: 10px;
+  display: none;
+}
+
+body.page-booking .success-msg.error {
+  background: #fdecea;
+  border-color: #e74c3c;
+  color: #a93226;
+}
+
+/* Hero card — not the dashboard grid cards */
+body.page-booking .booking-section .doctor-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  height: 100%;
+  background: #1a1a2e;
+  display: block;
+  flex-direction: unset;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.page-booking .booking-section .doctor-card:hover {
+  transform: none;
+}
+
+body.page-booking .booking-section .doctor-card img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+body.page-booking .booking-section .doctor-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.92) 50%, transparent 100%);
+  padding: 28px 22px;
+  color: #fff;
+}
+
+body.page-booking .booking-section .doctor-overlay h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 8px;
+}
+
+body.page-booking .booking-section .doctor-overlay .info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 7px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+body.page-booking .booking-section .doctor-overlay .info-row i {
+  color: #7ef0f0;
+  font-size: 13px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+body.page-booking .booking-section .doctor-overlay .price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+body.page-booking .booking-section .doctor-overlay .price-tag {
+  background: rgba(32, 164, 169, 0.45);
+  border: 1px solid rgba(127, 240, 240, 0.5);
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body.page-booking .booking-section .doctor-overlay a {
+  color: #7ef0f0;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+@media (max-width: 1024px) {
+  body.page-booking .main {
+    padding-top: 85px;
+    padding-bottom: 100px;
+    align-items: flex-start;
+  }
+
+  body.page-booking .booking-section {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  body.page-booking .booking-section .doctor-card {
+    min-height: 340px;
+    max-height: 420px;
+  }
+
+  body.page-booking .booking-section .doctor-card img {
+    min-height: 340px;
+    height: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  body.page-booking .main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  body.page-booking .booking-form {
+    padding: 24px 18px;
+  }
+}
