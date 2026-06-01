@@ -7,7 +7,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextBtn = document.getElementById("nextBtn");
   const form = document.getElementById("surveyForm");
 
-  if (!steps.length || !currentStepEl || !totalStepsEl || !progressBar || !prevBtn || !nextBtn || !form) {
+  if (
+    !steps.length ||
+    !currentStepEl ||
+    !totalStepsEl ||
+    !progressBar ||
+    !prevBtn ||
+    !nextBtn ||
+    !form
+  ) {
     console.error("بعض عناصر النموذج غير موجودة في الـ HTML.");
     return;
   }
@@ -35,7 +43,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const names = new Set();
       radios.forEach((r) => names.add(r.name));
       for (const name of names) {
-        const group = step.querySelectorAll('input[type="radio"][name="' + name + '"]');
+        const group = step.querySelectorAll(
+          'input[type="radio"][name="' + name + '"]',
+        );
         const checked = Array.from(group).some((r) => r.checked);
         if (!checked) {
           alert("رجاءً اختر إجابة لهذا السؤال قبل المتابعة.");
@@ -56,13 +66,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const textInputs = step.querySelectorAll(
-      'input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea'
+      'input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea',
     );
     for (const input of textInputs) {
+      if (input.disabled) continue;
       const name = input.name;
       const value = input.value.trim();
       if (name === "physical_details") {
-        const physicalIssues = form.querySelector('input[name="physical_issues"]:checked');
+        const physicalIssues = form.querySelector(
+          'input[name="physical_issues"]:checked',
+        );
         if (!physicalIssues || physicalIssues.value !== "YES") {
           continue;
         }
@@ -118,12 +131,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  const physicalIssuesRadios = form.querySelectorAll('input[name="physical_issues"]');
-  const physicalDetailsInput = form.querySelector('input[name="physical_details"]');
+  const physicalIssuesRadios = form.querySelectorAll(
+    'input[name="physical_issues"]',
+  );
+  const physicalDetailsInput = form.querySelector(
+    'input[name="physical_details"]',
+  );
 
   function updatePhysicalDetailsState() {
     if (!physicalDetailsInput) return;
-    const selected = form.querySelector('input[name="physical_issues"]:checked');
+    const selected = form.querySelector(
+      'input[name="physical_issues"]:checked',
+    );
     if (selected && selected.value === "NO") {
       physicalDetailsInput.disabled = true;
       physicalDetailsInput.value = "";

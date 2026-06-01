@@ -508,7 +508,7 @@ footer {
   .sidebar {
     transform: translateX(100%);
     position: fixed;
-    z-index: 999;
+    z-index: 1500;
   }
 
   .sidebar.open {

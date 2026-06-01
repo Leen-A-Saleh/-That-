@@ -69,14 +69,15 @@ body {
   justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 20px 60px 20px;
+  padding: 20px 30px;
   border-radius: 20px;
 }
 
 .game-card {
   background-color: #f3fdfc;
   border: 1px solid #26b5a4;
-  width: 350px;
+  width: 100%;
+  max-width: 350px;
   height: 180px;
   padding: 30px 24px;
   border-radius: 25px;
@@ -598,6 +599,13 @@ body {
   .tip-box {
     padding: 15px;
   }
+  .games-container {
+    padding: 10px;
+  }
+
+  .game-card {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 400px) {
@@ -617,4 +625,18 @@ body {
   .stat-value {
     font-size: 18px;
   }
+    .game-card {
+    padding: 20px 15px;
+  }
+
+  .games-container {
+    gap: 15px;
+  }
+}
+
+.games-container.two-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }

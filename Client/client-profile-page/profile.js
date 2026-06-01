@@ -246,23 +246,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── Sidebar toggle ─────────────────────────────────────────
   const menuBtn = document.getElementById("menuBtn");
   const sidebar = document.querySelector(".sidebar");
-
-  let overlay = document.querySelector(".sidebar-overlay");
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.className = "sidebar-overlay";
-    document.body.appendChild(overlay);
-  }
+  const overlay = document.querySelector(".sidebar-overlay");
 
   if (menuBtn && sidebar) {
     menuBtn.addEventListener("click", () => {
       sidebar.classList.toggle("open");
-      overlay.classList.toggle("open");
+      if (overlay) overlay.classList.toggle("open");
     });
 
-    overlay.addEventListener("click", () => {
-      sidebar.classList.remove("open");
-      overlay.classList.remove("open");
-    });
+    if (overlay) {
+      overlay.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        overlay.classList.remove("open");
+      });
+    }
   }
 });

@@ -121,15 +121,35 @@ try {
       <h2 class="names">التمارين و الأنشطة المتاحة</h2>
 
       <div class="games">
+
+        <div class="section-header">
+          <h1>التفريغ النفسي</h1>
+        </div> 
+
+         <section class="games-container two-cards">
+          <div class="game-card">
+            <h2>الرسام</h2>
+            <a href="loader.php?game=./Drawing-game/index.html" class="btn">جرّب الآن</a>
+          </div>
+          <div class="game-card">
+            <h2>فقاعات المرح</h2>
+            <a href="loader.php?game=./BubblePop-game/index.html" class="btn">جرّب الآن</a>
+          </div>
+        </section>
+
         <!-- تمارين -->
         <div class="section-header">
           <h1>تمارين</h1>
         </div>
 
-        <section class="games-container" id="gamesContainer">
+        <section class="games-container two-cards"">
+          <div class="game-card">
+            <h2>فقاعة التنفس</h2>
+            <a href="loader.php?game=./breathing-game/index.php" class="btn">جرّب الآن</a>
+          </div>
           <div class="game-card">
             <h2>تمرين التنفس</h2>
-            <a href="loader.php?game=./breathing-game/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./Breathing-test/index.html" class="btn">جرّب الآن</a>
           </div>
         </section>
 
@@ -137,7 +157,7 @@ try {
           <h1>ألعاب التركيز للأطفال</h1>
         </div>
 
-        <section class="games-container" id="gamesContainer">
+        <section class="games-container two-cards">
           <div class="game-card">
             <h2>الفروقات بين الصور</h2>
             <a href="loader.php?game=./difference-game/index.php" class="btn">جرّب الآن</a>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>تمرين الرسم</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header id="hdr">
+      <div id="logo"><span>لعبة الرسام</span></div>
+      <div class="hrow">
+        <button class="hbtn h-undo" onclick="undo()">↩ تراجع</button>
+        <button class="hbtn h-clear" onclick="clearAll()">🗑 مسح</button>
+        <button class="hbtn h-save" onclick="saveImg()">حفظ</button>
+        <button class="hbtn h-back" onclick="goBack()">↩ خروج</button>
+      </div>
+    </header>
+
+    <div id="tools">
+      <span class="plbl">أدوات</span>
+      <button class="tbtn on" id="tbtn-pen" onclick="setTool('pen')">
+        <span class="ico">✏️</span><span class="tl">قلم</span>
+      </button>
+      <button class="tbtn" id="tbtn-eraser" onclick="setTool('eraser')">
+        <span class="ico">🧹</span><span class="tl">ممحاة</span>
+      </button>
+      <button class="tbtn" id="tbtn-fill" onclick="setTool('fill')">
+        <span class="ico">🪣</span><span class="tl">تعبئة</span>
+      </button>
+      <div class="divid"></div>
+      <span class="plbl">الحجم</span>
+      <div class="szbox">
+        <div id="szdot-ring"><div id="szdot"></div></div>
+        <input
+          type="range"
+          class="sr"
+          min="1"
+          max="60"
+          value="8"
+          id="srange"
+          oninput="
+            brushSize = +this.value;
+            updSz();
+          "
+        />
+        <span id="sznum">8px</span>
+      </div>
+      <div class="divid"></div>
+      <span class="plbl">خلفية</span>
+      <div class="bglist" id="bglist"></div>
+    </div>
+
+    <div id="cvarea">
+      <div class="dotpat"></div>
+      <div id="cvwrap"><canvas id="cv"></canvas></div>
+    </div>
+
+    <div id="shapanel">
+      <span class="plbl">أشكال</span>
+      <div class="fpill">
+        <button class="fopt sel" id="fo-out" onclick="setFill(false)">
+          مفرغ
+        </button>
+        <button class="fopt" id="fo-fill" onclick="setFill(true)">ممتلئ</button>
+      </div>
+      <div id="shgrid"></div>
+    </div>
+
+    <div id="colbar">
+      <div class="curwrap">
+        <div id="curcol" style="background: #ff5252"></div>
+        <span class="curlbl">اللون</span>
+      </div>
+      <div class="coldiv"></div>
+      <div class="colgrid" id="colGrid"></div>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>

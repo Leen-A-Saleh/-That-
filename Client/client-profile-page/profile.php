@@ -308,8 +308,8 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
     </div>
   </section>
 
-
   <footer>© 2026 ذات للإستشارات النفسية جميع الحقوق محفوظة</footer>
+   <div class="sidebar-overlay"></div>
   <script src="./profile.js"></script>
 </body>
 

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Bubble Pop!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="screen-home" class="screen active">
+      <h1 class="title">!Bubble Pop</h1>
+      <button class="btn-start" onclick="startGame()">Start</button>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div id="hud">
+        <span id="hud-score">0</span>
+        <div id="timer-wrap">
+          <svg viewBox="0 0 48 48">
+            <circle class="tr-bg" cx="24" cy="24" r="20" />
+            <circle class="tr-fg" id="tr-fg" cx="24" cy="24" r="20" />
+          </svg>
+          <span id="hud-time">30</span>
+        </div>
+        <span id="hud-combo" style="display: none">x1</span>
+        <button
+          id="back-home-btn"
+          onclick="window.location.href = '../index.php'"
+        >
+          خروج
+        </button>
+      </div>
+      <div id="fx-layer"></div>
+    </div>
+
+    <div id="screen-over" class="screen">
+      <div class="over-box">
+        <div class="over-emoji" id="over-emoji">🎉</div>
+        <h2 class="over-title" id="over-title">أحسنت!</h2>
+        <div class="over-num" id="over-score">0</div>
+        <div class="over-sub">نقطة</div>
+        <div id="new-rec" class="new-rec hidden">🏆 رقم قياسي!</div>
+        <button class="btn-start small" onclick="goHome()">
+          إعادة المحاولة
+        </button>
+      </div>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
