@@ -5,8 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../partials/require-admin.php';
 require_once __DIR__ . '/users-database.php';
 
-// AJAX / POST handler  (JS calls this file with fetch())
-// Must come before any HTML output
+// ─── AJAX Handler ─────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
   header('Content-Type: application/json; charset=utf-8');
@@ -48,12 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
   exit;
 }
 
-//fetch data for the page
+// ─── Page Data ────────────────────────────────────────────────────────────────
 
 $stats = users_getStats();
 $allUsers = users_getAll();
 
-//avatar = first letter of name
 $usersForJs = array_map(function (array $u): array {
   return [
     'id'      => (int) $u['id'],

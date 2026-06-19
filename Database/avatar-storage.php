@@ -14,9 +14,7 @@ function avatar_relative_storage_path(string $filename): string
     return 'storage/avatars/' . ltrim($filename, '/');
 }
 
-/**
- * Full URL for browser display from value stored in users.avatar.
- */
+
 function avatar_public_url(?string $storedPath): string
 {
     if ($storedPath === null) {
@@ -34,8 +32,14 @@ function avatar_public_url(?string $storedPath): string
 
     $config = require __DIR__ . '/config.php';
     $base = rtrim((string) ($config['app_url'] ?? ''), '/');
+    $basePath = trim((string) parse_url($base, PHP_URL_PATH), '/');
+    $relativePath = ltrim($storedPath, '/');
 
-    return $base . '/' . ltrim($storedPath, '/');
+    if ($basePath !== '' && str_starts_with($relativePath, $basePath . '/')) {
+        $relativePath = substr($relativePath, strlen($basePath) + 1);
+    }
+
+    return $base . '/' . $relativePath;
 }
 
 function avatar_is_managed_storage_path(?string $path): bool

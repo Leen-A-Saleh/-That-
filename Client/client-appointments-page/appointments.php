@@ -13,6 +13,7 @@ require_auth();
 require_role(['CLIENT']);
 
 $clientId      = (int) current_user()['user_id'];
+cancelExpiredRequestedAppointments($clientId);
 $appointments  = getClientAppointments($clientId);
 $stats         = getClientAppointmentStats($clientId);
 $currentUser   = current_user();
@@ -80,8 +81,7 @@ $currentUser   = current_user();
         <div class="stat-info">
           <div class="stat-label">إجمالي الجلسات</div>
           <div class="stat-value" id="todayAppointments">
-            <?= htmlspecialchars((string) $stats['total']) ?>
-          </div>
+            <?= htmlspecialchars((string) ($stats['upcoming'] + $stats['completed'])) ?> </div>
         </div>
         <div class="stat-icon">
           <img src="../images/Container (2).png" alt="إجمالي الجلسات" />

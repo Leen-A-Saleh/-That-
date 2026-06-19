@@ -76,7 +76,7 @@ uploadBtn.addEventListener("click", async () => {
   formData.append("childId", localStorage.getItem("userId"));
 
   try {
-    const res = await fetch("/That-Copy/Client/client-games-page/activities.php?action=upload", {
+    const res = await fetch("/That-Copy/Client/client-games-page/games-database.php?action=upload", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -89,7 +89,7 @@ uploadBtn.addEventListener("click", async () => {
       selectedFiles = [];
       renderPreviews();
     } else {
-      alert("فشل الرفع، حاول مرة ثانية");
+      showErrorAlert("فشل الرفع، حاول مرة ثانية");
     }
   } catch (err) {
     successMsg.style.display = "block";

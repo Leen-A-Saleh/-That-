@@ -32,6 +32,7 @@ const questions = [
 
 let current = 0;
 let answers = [];
+const answerLabels = {2: 'دائماً', 1: 'أحياناً', 0: 'أبداً'};
 
 const container = document.getElementById("questionContainer");
 const progress = document.getElementById("progressBar");
@@ -52,7 +53,7 @@ function render() {
 }
 
 function selectAnswer(val) {
-  answers.push(val);
+  answers.push({q: current + 1, value: val, label: answerLabels[val] || ''});
   current++;
 
   if (current < questions.length) {
@@ -63,9 +64,10 @@ function selectAnswer(val) {
 }
 
 function showResult() {
-  let total = answers.reduce((a, b) => a + b, 0);
+  let total = answers.reduce(function(a, b) { return a + b.value; }, 0);
 
   let level = "";
+  let storageLevel = "";
 
   if (total <= 19) {
     level = "قلق اجتماعي منخفض";
@@ -73,6 +75,14 @@ function showResult() {
     level = "قلق اجتماعي متوسط";
   } else {
     level = "قلق اجتماعي مرتفع";
+  }
+
+  if (total <= 19) {
+    storageLevel = "LOW";
+  } else if (total <= 38) {
+    storageLevel = "MEDIUM";
+  } else {
+    storageLevel = "HIGH";
   }
 
   container.innerHTML = `
@@ -97,6 +107,10 @@ ${
 </div>
 
 `;
+
+// Save to database
+saveResult(window.ASSESSMENT_ID, answers, total, storageLevel, null);
+
 }
 
 render();

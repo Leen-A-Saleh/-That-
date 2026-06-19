@@ -1,5 +1,17 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../Database/helpers.php';
+require_once __DIR__ . '/../../../Database/client.php';
+
+start_secure_session();
+require_auth();
+require_role(['CLIENT']);
+
+$progressScriptVersion = (string) filemtime(__DIR__ . '/crossword-progress.js');
+?>
 <!doctype html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <title>Level 2 - ابحث عن الكلمات</title>
@@ -43,6 +55,10 @@
       رجوع
     </button>
 
+    <script>
+      window.CROSSWORD_LEVEL_NUMBER = 2;
+    </script>
+    <script src="crossword-progress.js?v=<?= e($progressScriptVersion) ?>"></script>
     <script>
       const bgMusic = new Audio("./assest/bgMusic.mp3");
       bgMusic.loop = true;
@@ -302,7 +318,9 @@
         if (foundWords.length === words.length) {
           clearInterval(timer);
           correctSound.play();
-          showPopup("🎉 ! أحسنت ", true);
+          crosswordCompleteLevel(2, totalTime, timeLeft).finally(() => {
+            showPopup("🎉 ! أحسنت ", true);
+          });
         }
       }
 
@@ -401,7 +419,7 @@
         }
       }
 
-      window.onload = createGrid;
+      window.onload = () => crosswordStartLevel(createGrid);
       document.getElementById("backBtn").addEventListener("click", () => {
         window.location.href = "../index.php";
       });

@@ -136,7 +136,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
     closeModal();
     setTimeout(() => window.location.reload(), 600);
   } catch (err) {
-    alert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
+    showErrorAlert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
   }
 });
 
@@ -156,8 +156,6 @@ sidebarOverlay.addEventListener("click", () => {
   sidebarOverlay.classList.remove("open");
 });
 
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) logoutBtn.addEventListener("click", () => { window.location.href = "../index.php"; });
 
 // Boot
 

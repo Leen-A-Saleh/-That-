@@ -1,3 +1,14 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../Database/helpers.php';
+require_once __DIR__ . '/../../Database/auth.php';
+start_secure_session();
+require_auth();
+require_role(['CLIENT']);
+require_once __DIR__ . '/tests-database.php';
+tests_start_assessment_result(2, (int) current_user()['user_id']);
+?>
 <!doctype html>
 <html lang="ar" dir="rtl">
   <head>
@@ -29,6 +40,8 @@
       <div id="resultBox"></div>
     </div>
 
+    <script>window.ASSESSMENT_ID = 2;</script>
+    <script src="./assets/js/save-result.js"></script>
     <script src="./assets/js/hopkins.js"></script>
   </body>
 </html>

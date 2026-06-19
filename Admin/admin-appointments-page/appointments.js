@@ -7,8 +7,7 @@ const appointmentStats = window.appointmentStats || {
 };
 const therapistLegend = window.therapistLegend || [];
 
-// Default month May 2026
-let currentDate = new Date(2026, 4, 1);
+let currentDate = new Date();
 
 function createTextElement(tagName, className, text) {
   const element = document.createElement(tagName);
@@ -171,22 +170,8 @@ function setupSidebar() {
   });
 }
 
-function setupLogout() {
-  const logoutBtn = document.getElementById("logoutBtn");
-
-  if (!logoutBtn) {
-    return;
-  }
-
-  logoutBtn.addEventListener("click", function () {
-    localStorage.removeItem("token");
-    window.location.href = "../login-page/login.php";
-  });
-}
-
 updateStats();
 renderLegend();
 renderCalendar();
 setupMonthButtons();
 setupSidebar();
-setupLogout();

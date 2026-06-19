@@ -1,21 +1,41 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
+require_once __DIR__ . '/../../Database/db.php';
 require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/games-database.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
+
+$activityStats = [
+  'completed' => 0,
+  'pending' => 0,
+  'total' => 0,
+];
+
+try {
+  $activityStats = client_game_activity_stats(client_current_user_id());
+} catch (Throwable $exception) {
+  $activityStats = [
+    'completed' => 0,
+    'pending' => 0,
+    'total' => 0,
+  ];
+}
 
 $showNotificationDot = false;
 try {
-  $showNotificationDot = client_has_unread_notifications_for_current_user();
+  $showNotificationDot = hasUnreadNotifications();
 } catch (Throwable $exception) {
   $showNotificationDot = false;
 }
 ?>
 <!doctype html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 
 <head>
   <meta charset="UTF-8" />
@@ -39,7 +59,7 @@ try {
     <div class="nav-right">
       <a href="../client-notifications-page/notifications.php" class="bell">
         <i class="fa-regular fa-bell"></i>
-        <span class="dot" id="notificationDot"<?= $showNotificationDot ? '' : ' style="display:none;"' ?>></span>
+        <span class="dot" id="notificationDot" <?= $showNotificationDot ? '' : ' style="display:none;"' ?>></span>
       </a>
     </div>
   </header>
@@ -59,7 +79,7 @@ try {
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">الأنشطة المكتملة</div>
-            <div class="stat-value" id="totalCases">6</div>
+            <div class="stat-value" id="totalCases"><?= (int) $activityStats['completed'] ?></div>
           </div>
           <div class="stat-icon">
             <img src="../images/Container4.png" alt="إجمالي الحالات" />
@@ -69,7 +89,7 @@ try {
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">الأنشطة المؤجلة</div>
-            <div class="stat-value" id="activeCases">3</div>
+            <div class="stat-value" id="activeCases"><?= (int) $activityStats['pending'] ?></div>
           </div>
           <div class="stat-icon">
             <img src="../images/Container 5.png" alt=" لحالات النشطة" />
@@ -79,7 +99,7 @@ try {
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">إجمالي الأنشطة</div>
-            <div class="stat-value" id="todayAppointments">9</div>
+            <div class="stat-value" id="todayAppointments"><?= (int) $activityStats['total'] ?></div>
           </div>
           <div class="stat-icon">
             <img src="../images/Container 6.png" alt="مواعيد اليوم" />
@@ -121,35 +141,15 @@ try {
       <h2 class="names">التمارين و الأنشطة المتاحة</h2>
 
       <div class="games">
-
-        <div class="section-header">
-          <h1>التفريغ النفسي</h1>
-        </div> 
-
-         <section class="games-container two-cards">
-          <div class="game-card">
-            <h2>الرسام</h2>
-            <a href="loader.php?game=./Drawing-game/index.html" class="btn">جرّب الآن</a>
-          </div>
-          <div class="game-card">
-            <h2>فقاعات المرح</h2>
-            <a href="loader.php?game=./BubblePop-game/index.html" class="btn">جرّب الآن</a>
-          </div>
-        </section>
-
         <!-- تمارين -->
         <div class="section-header">
           <h1>تمارين</h1>
         </div>
 
-        <section class="games-container two-cards"">
-          <div class="game-card">
-            <h2>فقاعة التنفس</h2>
-            <a href="loader.php?game=./breathing-game/index.php" class="btn">جرّب الآن</a>
-          </div>
+        <section class="games-container" id="gamesContainer">
           <div class="game-card">
             <h2>تمرين التنفس</h2>
-            <a href="loader.php?game=./Breathing-test/index.html" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./breathing-game/index.php&key=Breathing" class="btn">جرّب الآن</a>
           </div>
         </section>
 
@@ -157,15 +157,15 @@ try {
           <h1>ألعاب التركيز للأطفال</h1>
         </div>
 
-        <section class="games-container two-cards">
+        <section class="games-container" id="gamesContainer">
           <div class="game-card">
             <h2>الفروقات بين الصور</h2>
-            <a href="loader.php?game=./difference-game/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./difference-game/index.php&key=Difference" class="btn">جرّب الآن</a>
           </div>
 
           <div class="game-card">
             <h2>ابحث عن العنصر المفقود</h2>
-            <a href="loader.php?game=./misplacedpin/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./misplacedpin/index.php&key=Misplacedpin" class="btn">جرّب الآن</a>
           </div>
         </section>
 
@@ -176,17 +176,17 @@ try {
         <section class="games-container" id="gamesContainer">
           <div class="game-card">
             <h2>لعبة البطاقات</h2>
-            <a href="loader.php?game=./memory-game/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./memory-game/index.php&key=Cards" class="btn">جرّب الآن</a>
           </div>
 
           <div class="game-card">
             <h2>الكلمات المتقاطعة</h2>
-            <a href="loader.php?game=./crossword-game/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./crossword-game/index.php&key=Crossword" class="btn">جرّب الآن</a>
           </div>
 
           <div class="game-card">
             <h2>صورة وعليها أسئلة بعد ما تختفي</h2>
-            <a href="loader.php?game=./questions/index.php" class="btn">جرّب الآن</a>
+            <a href="loader.php?game=./Questions/index.php&key=Questions" class="btn">جرّب الآن</a>
           </div>
         </section>
       </div>
@@ -210,6 +210,7 @@ try {
   </div>
 
   <footer>© 2026 ذات للإستشارات النفسية جميع الحقوق محفوظة</footer>
+  <div class="sidebar-overlay"></div>
   <script src="./games.js"></script>
   <script src="./activities.js"></script>
 </body>

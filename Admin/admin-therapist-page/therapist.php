@@ -5,8 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../partials/require-admin.php';
 require_once __DIR__ . '/therapists-database.php';
 
-// Handle AJAX POST actions (fetch() calls from therapist.js)
-// Must be before any HTML output
+// ─── AJAX Handler ─────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   header('Content-Type: application/json');
@@ -38,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   exit;
 }
 
-// Fetch data for page render
+// ─── Page Data ────────────────────────────────────────────────────────────────
+
 $stats = getTherapistsStats();
 $therapists = getAllTherapists();
 
@@ -253,19 +253,6 @@ $therapists = getAllTherapists();
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Dropdown Menu -->
-  <div class="dropdown-menu" id="dropdownMenu">
-    <button class="dropdown-item" id="dropdownView">
-      <i class="fa fa-eye"></i> عرض التفاصيل
-    </button>
-    <button class="dropdown-item" id="dropdownEdit">
-      <i class="fa fa-edit"></i> تعديل
-    </button>
-    <button class="dropdown-item danger" id="dropdownDelete">
-      <i class="fa fa-trash"></i> حذف
-    </button>
   </div>
 
   <!-- Inject DB data as a JS variable — therapist.js reads this -->

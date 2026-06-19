@@ -265,6 +265,128 @@ body {
   gap: 20px;
 }
 
+/* ─── قسم التوصيات الذكية (Rule-Based AI) ─── */
+.reco-section {
+  margin-bottom: 32px;
+  padding: 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eafaf9 0%, #f5f7f5 100%);
+  border: 1px solid #cfeceb;
+}
+
+.reco-header h2 {
+  font-size: 22px;
+  color: #178a8a;
+  margin-bottom: 4px;
+}
+
+.reco-header h2 i {
+  margin-left: 6px;
+}
+
+.reco-header p {
+  font-size: 14px;
+  color: #5a7370;
+  margin-bottom: 18px;
+}
+
+.reco-doctors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.reco-card {
+  position: relative;
+  border: 2px solid #2fa4a9;
+}
+
+.reco-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulseGold 2s infinite;
+}
+
+@keyframes pulseGold {
+  0% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 10px 2px rgba(255, 215, 0, 0.4); }
+  100% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.reco-badge i {
+  color: #FFD700;
+  font-size: 15px;
+  margin: 0;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+}
+
+.reco-reasons {
+  margin-top: 15px;
+  background: linear-gradient(to left, #f8fcfc, #eef9f8);
+  border-radius: 10px;
+  padding: 12px 15px;
+  border-right: 4px solid #2fa4a9;
+  box-shadow: 0 2px 8px rgba(47, 164, 169, 0.08);
+}
+
+.reco-reasons-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #178a8a;
+  margin-bottom: 10px;
+}
+
+.reco-reasons-title i {
+  color: #2fa4a9;
+  font-size: 16px;
+}
+
+.reco-reasons ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reco-reasons li {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.6;
+  margin-bottom: 6px;
+  position: relative;
+  padding-right: 22px;
+}
+
+.reco-reasons li::before {
+  content: "\f058"; /* FontAwesome circle check mark */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 0;
+  top: 3px;
+  color: #2aa5a5;
+  font-size: 14px;
+}
+
+.reco-reasons li:last-child {
+  margin-bottom: 0;
+}
+
 .doctor-card {
   background: white;
   border-radius: 12px;
@@ -396,7 +518,8 @@ footer {
     right: 0;
   }
 
-  .doctors {
+  .doctors,
+  .reco-doctors {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -419,7 +542,8 @@ footer {
     padding: 80px 15px 100px;
   }
 
-  .doctors {
+  .doctors,
+  .reco-doctors {
     grid-template-columns: 1fr;
   }
 

@@ -26,7 +26,7 @@ doctorImg.onerror = function () {
 };
 
 if (bookingErrorMessage) {
-  alert(bookingErrorMessage);
+  showErrorAlert(bookingErrorMessage);
 }
 
 const bookingForm = document.getElementById("bookingForm");

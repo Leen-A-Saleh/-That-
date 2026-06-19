@@ -2,9 +2,11 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
+require_once __DIR__ . '/../../Database/db.php';
 require_once __DIR__ . '/../../Database/client.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
 
 header('Content-Type: application/json; charset=UTF-8');
@@ -12,10 +14,39 @@ header('Content-Type: application/json; charset=UTF-8');
 $action = trim((string) ($_GET['action'] ?? 'stats'));
 
 if ($action === 'stats') {
+    $clientId = client_current_user_id();
+
+    $completedStmt = db()->prepare(
+        'SELECT COUNT(DISTINCT game_name)
+         FROM game_results
+         WHERE client_id = :client_id AND is_completed = 1'
+    );
+    $completedStmt->execute(['client_id' => $clientId]);
+
+    $pendingStmt = db()->prepare(
+        'SELECT COUNT(*) FROM game_results WHERE client_id = :client_id AND is_completed = 0'
+    );
+    $pendingStmt->execute(['client_id' => $clientId]);
+
+    $totalStmt = db()->prepare(
+        'SELECT COUNT(*)
+         FROM activities
+         WHERE created_by = :admin_id
+            OR created_by IN (
+             SELECT DISTINCT therapist_id
+             FROM cases
+             WHERE client_id = :client_id
+         )'
+    );
+    $totalStmt->execute([
+        'admin_id' => 1,
+        'client_id' => $clientId,
+    ]);
+
     echo json_encode([
-        'completed' => 0,
-        'pending' => 0,
-        'total' => 0,
+        'completed' => (int) $completedStmt->fetchColumn(),
+        'pending' => (int) $pendingStmt->fetchColumn(),
+        'total' => (int) $totalStmt->fetchColumn(),
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }

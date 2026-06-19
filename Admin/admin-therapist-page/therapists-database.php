@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/db.php';
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 function getTherapistsStats(): array
 {
     $row = db()->query("
@@ -25,6 +27,8 @@ function getTherapistsStats(): array
         'total_cases' => (int)   ($casesRow['total_cases'] ?? 0),
     ];
 }
+
+// ─── Fetch All ────────────────────────────────────────────────────────────────
 
 function getAllTherapists(): array
 {
@@ -48,6 +52,8 @@ function getAllTherapists(): array
     ");
     return $stmt->fetchAll();
 }
+
+// ─── Create ───────────────────────────────────────────────────────────────────
 
 function addTherapist(array $data): bool
 {
@@ -84,11 +90,13 @@ function addTherapist(array $data): bool
 
         $pdo->commit();
         return true;
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $pdo->rollBack();
         return false;
     }
 }
+
+// ─── Update ───────────────────────────────────────────────────────────────────
 
 function updateTherapist(int $id, array $data): bool
 {
@@ -122,11 +130,13 @@ function updateTherapist(int $id, array $data): bool
 
         $pdo->commit();
         return true;
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $pdo->rollBack();
         return false;
     }
 }
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
 
 function deleteTherapist(int $id): bool
 {

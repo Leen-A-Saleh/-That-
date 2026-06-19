@@ -1,3 +1,26 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../Database/helpers.php';
+require_once __DIR__ . '/../../Database/auth.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
+require_once __DIR__ . '/tests-database.php';
+
+start_secure_session();
+require_auth();
+require_role(['CLIENT']);
+
+$clientId            = (int) current_user()['user_id'];
+$stats               = tests_get_client_assessment_stats($clientId);
+$suggestion          = tests_get_latest_suggestion($clientId);
+$showNotificationDot = false;
+
+try {
+    $showNotificationDot = hasUnreadNotifications();
+} catch (Throwable) {
+    $showNotificationDot = false;
+}
+?>
 <!doctype html>
 <html lang="ar" dir="rtl">
 
@@ -23,7 +46,7 @@
     <div class="nav-right">
       <a href="../client-notifications-page/notifications.php" class="bell">
         <i class="fa-regular fa-bell"></i>
-        <span class="dot" id="notificationDot"></span>
+        <span class="dot" id="notificationDot"<?= $showNotificationDot ? '' : ' style="display:none;"' ?>></span>
       </a>
     </div>
   </header>
@@ -41,7 +64,7 @@
       <div class="stat-card">
         <div class="stat-info">
           <div class="stat-label">الاختبارات المكتملة</div>
-          <div class="stat-value" id="totalCases">4</div>
+          <div class="stat-value" id="totalCases"><?= e((string) $stats['total_completed']) ?></div>
         </div>
         <div class="stat-icon">
           <img src="../images/Container10.png" alt="" />
@@ -51,7 +74,7 @@
       <div class="stat-card">
         <div class="stat-info">
           <div class="stat-label">إجمالي الاختبارات</div>
-          <div class="stat-value" id="activeCases">6</div>
+          <div class="stat-value" id="activeCases"><?= e((string) $stats['total_tests']) ?></div>
         </div>
         <div class="stat-icon">
           <img src="../images/Container11.png" alt="" />
@@ -61,7 +84,7 @@
       <div class="stat-card">
         <div class="stat-info">
           <div class="stat-label">معدل الإكمال</div>
-          <div class="stat-value" id="todayAppointments">33%</div>
+          <div class="stat-value" id="todayAppointments"><?= e((string) $stats['completion_rate']) ?>%</div>
         </div>
         <div class="stat-icon">
           <img src="../images/Container12.png" alt="" />
@@ -69,19 +92,21 @@
       </div>
     </section>
 
+    <?php if ($suggestion): ?>
     <div class="tip-box">
       <div class="tip-header">
         <img src="../images/Container19.png" alt="أيقونة" />
         <h2>اختبار موصى به</h2>
       </div>
       <p>
-        بناءً على جلساتك الأخيرة، ننصحك بإجراء اختبار القلق (GAD-7) لمتابعة تقدمك
+        بناءً على جلساتك الأخيرة، ننصحك بإجراء اختبار <?= e($suggestion['title_ar']) ?>(<?= e($suggestion['title']) ?>) لمتابعة تقدمك
       </p>
-      <a class="butons" id="recommendedTestBtn">
+      <a class="butons" id="recommendedTestBtn" data-href="<?= e($suggestion['page_url'] ?? '') ?>">
         ابدأ الاختبار
         <img src="../images/Icontest.svg" alt="icon" style="width: 20px; height: 20px" />
       </a>
     </div>
+    <?php endif; ?>
 
     <h2 class="names">جميع الاختبارات</h2>
 
@@ -159,6 +184,7 @@
     </div>
   </main>
 
+  <div class="sidebar-overlay"></div>
   <footer>© 2026 ذات للإستشارات النفسية جميع الحقوق محفوظة</footer>
 
   <script src="./tests.js"></script>

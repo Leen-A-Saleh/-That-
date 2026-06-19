@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../Database/db.php';
 require_once __DIR__ . '/../../Database/helpers.php';
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 function tests_getStats(): array
 {
     $totalTests = (int) db()->query("
@@ -12,36 +14,42 @@ function tests_getStats(): array
     ")->fetchColumn();
 
     $totalCompletions = (int) db()->query("
-        SELECT COUNT(*) FROM assessment_results
+        SELECT COUNT(*) 
+        FROM assessment_results
+        WHERE status = 'COMPLETED'
     ")->fetchColumn();
 
     $thisMonth = (int) db()->query("
         SELECT COUNT(*) FROM assessment_results
-        WHERE YEAR(created_at)  = YEAR(NOW())
+        WHERE status = 'COMPLETED'
+          AND YEAR(created_at)  = YEAR(NOW())
           AND MONTH(created_at) = MONTH(NOW())
     ")->fetchColumn();
 
     $firstResult = db()->query("
         SELECT MIN(created_at) FROM assessment_results
+        WHERE status = 'COMPLETED'
     ")->fetchColumn();
 
     $dailyAvg = 0;
     if ($firstResult) {
         $days = max(1, (int) db()->query("
-            SELECT DATEDIFF(NOW(), MIN(created_at)) FROM assessment_results
+            SELECT DATEDIFF(NOW(), MIN(created_at))
+            FROM assessment_results
+            WHERE status = 'COMPLETED'
         ")->fetchColumn());
         $dailyAvg = $days > 0 ? round($totalCompletions / $days) : $totalCompletions;
     }
 
     return [
-        'total_tests'   => $totalTests,
-        'completions'   => $totalCompletions,
-        'this_month'    => $thisMonth,
-        'daily_avg'     => $dailyAvg,
+        'total_tests' => $totalTests,
+        'completions' => $totalCompletions,
+        'this_month'  => $thisMonth,
+        'daily_avg'   => $dailyAvg,
     ];
 }
 
-//completions per month (last 6 months) for the bar chart
+// ─── Monthly ──────────────────────────────────────────────────────────────────
 
 function tests_getMonthly(): array
 {
@@ -51,21 +59,22 @@ function tests_getMonthly(): array
             MONTH(created_at) AS mo,
             COUNT(*)          AS total
         FROM assessment_results
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        WHERE status = 'COMPLETED'
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
         GROUP BY yr, mo
         ORDER BY yr ASC, mo ASC
     ")->fetchAll();
 
     $arMonths = [
-        1 => 'يناير',
-        2 => 'فبراير',
-        3 => 'مارس',
-        4 => 'أبريل',
-        5 => 'مايو',
-        6 => 'يونيو',
-        7 => 'يوليو',
-        8 => 'أغسطس',
-        9 => 'سبتمبر',
+        1  => 'يناير',
+        2  => 'فبراير',
+        3  => 'مارس',
+        4  => 'أبريل',
+        5  => 'مايو',
+        6  => 'يونيو',
+        7  => 'يوليو',
+        8  => 'أغسطس',
+        9  => 'سبتمبر',
         10 => 'أكتوبر',
         11 => 'نوفمبر',
         12 => 'ديسمبر',
@@ -82,7 +91,7 @@ function tests_getMonthly(): array
     return ['labels' => $labels, 'data' => $data];
 }
 
-// completions per category for the bar list
+// ─── Category Bars ────────────────────────────────────────────────────────────
 
 function tests_getCategoryBars(): array
 {
@@ -91,7 +100,9 @@ function tests_getCategoryBars(): array
             a.category,
             COUNT(ar.result_id) AS total
         FROM assessments a
-        LEFT JOIN assessment_results ar ON ar.assessment_id = a.assessment_id
+        LEFT JOIN assessment_results ar
+            ON ar.assessment_id = a.assessment_id
+           AND ar.status = 'COMPLETED'
         GROUP BY a.category
         ORDER BY total DESC
     ")->fetchAll();
@@ -106,8 +117,7 @@ function tests_getCategoryBars(): array
     return $result;
 }
 
-
-// all assessments with aggregated result data
+// ─── Fetch All ────────────────────────────────────────────────────────────────
 
 function tests_getAll(): array
 {
@@ -123,7 +133,9 @@ function tests_getAll(): array
             COUNT(ar.result_id) AS completions,
             COALESCE(ROUND(AVG(ar.trait_score), 1), 0) AS avg_score
         FROM assessments a
-        LEFT JOIN assessment_results ar ON ar.assessment_id = a.assessment_id
+        LEFT JOIN assessment_results ar
+            ON ar.assessment_id = a.assessment_id
+           AND ar.status = 'COMPLETED'
         GROUP BY
             a.assessment_id, a.title_ar, a.title,
             a.category, a.question_count, a.description, a.is_active
@@ -132,20 +144,20 @@ function tests_getAll(): array
 
     return array_map(function (array $r): array {
         return [
-            'id' => (int) $r['id'],
-            'nameAr' => $r['nameAr'] ?? '',
-            'nameEn' => $r['nameEn'] ?? '',
-            'cat' => $r['cat'],
-            'questions' => (int) $r['questions'],
+            'id'          => (int) $r['id'],
+            'nameAr'      => $r['nameAr'] ?? '',
+            'nameEn'      => $r['nameEn'] ?? '',
+            'cat'         => $r['cat'],
+            'questions'   => (int) $r['questions'],
             'description' => $r['description'],
-            'status' => ((int) $r['is_active'] === 1) ? 'active' : 'draft',
+            'status'      => ((int) $r['is_active'] === 1) ? 'active' : 'draft',
             'completions' => (int) $r['completions'],
-            'avg' => (float) $r['avg_score'],
+            'avg'         => (float) $r['avg_score'],
         ];
     }, $rows);
 }
 
-// CREATE
+// ─── Create ───────────────────────────────────────────────────────────────────
 
 function tests_add(
     string $nameAr,
@@ -169,19 +181,19 @@ function tests_add(
             (:code, :title, :title_ar, :category, :questions, :description, :is_active)
     ");
     $stmt->execute([
-        ':code' => $code,
-        ':title' => $nameEn,
-        ':title_ar' => $nameAr,
-        ':category' => $cat,
-        ':questions' => $questions,
+        ':code'        => $code,
+        ':title'       => $nameEn,
+        ':title_ar'    => $nameAr,
+        ':category'    => $cat,
+        ':questions'   => $questions,
         ':description' => $description,
-        ':is_active' => $isActive,
+        ':is_active'   => $isActive,
     ]);
 
     return (int) db()->lastInsertId();
 }
 
-// UPDATE
+// ─── Update ───────────────────────────────────────────────────────────────────
 
 function tests_update(
     int    $id,
@@ -207,33 +219,33 @@ function tests_update(
         throw new RuntimeException('الاختبار غير موجود');
     }
 
-    $finalNameAr = $nameAr !== '' ? $nameAr : $row['title_ar'];
-    $finalNameEn = $nameEn !== '' ? $nameEn : $row['title'];
-    $finalCat = $cat !== '' ? $cat : $row['category'];
-    $finalQuestions = $questions >  0  ? $questions : (int) $row['question_count'];
-    $finalDesc = $description !== '' ? $description : $row['description'];
+    $finalNameAr    = $nameAr      !== '' ? $nameAr      : $row['title_ar'];
+    $finalNameEn    = $nameEn      !== '' ? $nameEn      : $row['title'];
+    $finalCat       = $cat         !== '' ? $cat         : $row['category'];
+    $finalQuestions = $questions   >  0   ? $questions   : (int) $row['question_count'];
+    $finalDesc      = $description !== '' ? $description : $row['description'];
 
     db()->prepare("
         UPDATE assessments
-        SET title_ar = :title_ar,
-            title = :title,
-            category = :category,
+        SET title_ar       = :title_ar,
+            title          = :title,
+            category       = :category,
             question_count = :questions,
-            description = :description,
-            is_active = :is_active
+            description    = :description,
+            is_active      = :is_active
         WHERE assessment_id = :id
     ")->execute([
-        ':title_ar' => $finalNameAr,
-        ':title' => $finalNameEn,
-        ':category' => $finalCat,
+        ':title_ar'  => $finalNameAr,
+        ':title'     => $finalNameEn,
+        ':category'  => $finalCat,
         ':questions' => $finalQuestions,
         ':description' => $finalDesc,
         ':is_active' => ($status === 'active') ? 1 : 0,
-        ':id' => $id,
+        ':id'        => $id,
     ]);
 }
 
-// DELETE
+// ─── Delete ───────────────────────────────────────────────────────────────────
 
 function tests_delete(int $id): void
 {

@@ -3,41 +3,15 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/db.php';
+require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
 
-/**
- * Returns the user_id of the currently authenticated client.
- *
- * @throws RuntimeException when no authenticated session exists.
- */
-function notifications_current_user_id(): int
-{
-    start_secure_session();
+// ─── Fetch
 
-    $user = current_user(); // reads $_SESSION['auth']
-
-    if (!is_array($user) || !isset($user['user_id'])) {
-        throw new RuntimeException('Client is not authenticated.');
-    }
-
-    return (int) $user['user_id'];
-}
-
-/**
- * Fetches all notifications for the current user, newest first.
- *
- * @return list<array{
- *   id:int,
- *   type:string,
- *   title:string,
- *   message:string,
- *   time:string,
- *   read:bool,
- *   created_at:string
- * }>
- */
 function client_get_notifications_for_current_user(): array
 {
-    $userId = notifications_current_user_id();
+    $userId = client_current_user_id();
+    $notificationFilterSql = client_notification_preferences_sql_filter();
 
     $stmt = db()->prepare(
         'SELECT
@@ -48,7 +22,7 @@ function client_get_notifications_for_current_user(): array
             is_read,
             created_at
          FROM notifications
-         WHERE user_id = :user_id
+         WHERE user_id = :user_id' . $notificationFilterSql . '
          ORDER BY created_at DESC, notification_id DESC'
     );
     $stmt->execute(['user_id' => $userId]);
@@ -73,14 +47,11 @@ function client_get_notifications_for_current_user(): array
     return $items;
 }
 
-/**
- * Returns aggregate counts for the current user's notifications.
- *
- * @return array{total:int, this_week:int, unread:int}
- */
+
 function client_get_notification_stats_for_current_user(): array
 {
-    $userId = notifications_current_user_id();
+    $userId = client_current_user_id();
+    $notificationFilterSql = client_notification_preferences_sql_filter();
 
     $stmt = db()->prepare(
         'SELECT
@@ -88,7 +59,7 @@ function client_get_notification_stats_for_current_user(): array
             SUM(CASE WHEN YEARWEEK(created_at, 1) = YEARWEEK(NOW(), 1) THEN 1 ELSE 0 END) AS this_week_notifications,
             SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) AS unread_notifications
          FROM notifications
-         WHERE user_id = :user_id'
+         WHERE user_id = :user_id' . $notificationFilterSql
     );
     $stmt->execute(['user_id' => $userId]);
 
@@ -104,79 +75,47 @@ function client_get_notification_stats_for_current_user(): array
     ];
 }
 
-function client_has_unread_notifications_for_current_user(): bool
-{
-    $userId = notifications_current_user_id();
+// ─── Actions
 
-    $stmt = db()->prepare(
-        'SELECT EXISTS(
-            SELECT 1
-            FROM notifications
-            WHERE user_id = :user_id AND is_read = 0
-        ) AS has_unread'
-    );
-    $stmt->execute(['user_id' => $userId]);
-
-    $result = $stmt->fetch();
-    if (!is_array($result)) {
-        return false;
-    }
-
-    return ((int) ($result['has_unread'] ?? 0)) === 1;
-}
-
-/**
- * Marks every unread notification for the current user as read.
- *
- * @return int number of rows updated
- */
 function client_mark_all_notifications_as_read_for_current_user(): int
 {
-    $userId = notifications_current_user_id();
+    $userId = client_current_user_id();
+    $notificationFilterSql = client_notification_preferences_sql_filter();
 
     $stmt = db()->prepare(
         'UPDATE notifications
          SET is_read = 1
-         WHERE user_id = :user_id AND is_read = 0'
+         WHERE user_id = :user_id AND is_read = 0' . $notificationFilterSql
     );
     $stmt->execute(['user_id' => $userId]);
 
     return (int) $stmt->rowCount();
 }
 
-/**
- * Deletes every notification belonging to the current user.
- *
- * @return int number of rows deleted
- */
+
 function client_delete_all_notifications_for_current_user(): int
 {
-    $userId = notifications_current_user_id();
+    $userId = client_current_user_id();
+    $notificationFilterSql = client_notification_preferences_sql_filter();
 
     $stmt = db()->prepare(
         'DELETE FROM notifications
-         WHERE user_id = :user_id'
+         WHERE user_id = :user_id' . $notificationFilterSql
     );
     $stmt->execute(['user_id' => $userId]);
 
     return (int) $stmt->rowCount();
 }
 
-/**
- * Toggles the is_read flag of a single notification that belongs to the
- * current user.
- *
- * @return bool|null new read-state, or null when the notification was not
- *                   found (wrong id or wrong owner).
- */
 function client_toggle_notification_read_for_current_user(int $notificationId): ?bool
 {
     if ($notificationId <= 0) {
         return null;
     }
 
-    $userId = notifications_current_user_id();
+    $userId = client_current_user_id();
     $connection = db();
+    $notificationFilterSql = client_notification_preferences_sql_filter();
 
     try {
         $connection->beginTransaction();
@@ -184,7 +123,7 @@ function client_toggle_notification_read_for_current_user(int $notificationId): 
         $selectStmt = $connection->prepare(
             'SELECT is_read
              FROM notifications
-             WHERE notification_id = :notification_id AND user_id = :user_id
+             WHERE notification_id = :notification_id AND user_id = :user_id' . $notificationFilterSql . '
              LIMIT 1'
         );
         $selectStmt->execute([
@@ -221,6 +160,8 @@ function client_toggle_notification_read_for_current_user(int $notificationId): 
         throw $exception;
     }
 }
+
+// ─── Utilities
 
 function notifications_humanize_time(string $createdAt): string
 {
@@ -335,8 +276,8 @@ function notifications_map_type(string $databaseType): string
     $normalized = strtoupper(trim($databaseType));
 
     return match (true) {
-        in_array($normalized, ['APPOINTMENT_REMINDER', 'SESSION_CONFIRMATION'], true) => 'appointment',
-        $normalized === 'ACTIVITY_ASSIGNED' => 'activity',
+        in_array($normalized, ['APPOINTMENT_REMINDER', 'SESSION_CONFIRMATION', 'APPOINTMENT'], true) => 'appointment',
+        in_array($normalized, ['ACTIVITY_ASSIGNED', 'ACTIVITY_REMINDER'], true) => 'activity',
         $normalized === 'ASSESSMENT_READY' => 'test',
         $normalized === 'ALERT' => 'warning',
         default => 'info',

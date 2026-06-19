@@ -3,17 +3,36 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
 
-// Logout handler (kept in Database/auth.php, included via Database/client.php)
-handle_logout_post('/That-Copy/Auth/login/index.php');
+handle_logout_post('/That-Copy/Public/login/index.php');
 
-/**
- * Usage:
- *   <?php $clientSidebarActive = 'dashboard'; include __DIR__ . '/../partials/sidebar.php'; ?>
- *
- * Allowed values: dashboard|appointments|chat|tests|activities|notifications|profile
- */
 $clientSidebarActive = $clientSidebarActive ?? '';
+
+$clientMessageNotificationsEnabled = true;
+try {
+    $clientMessageNotificationsEnabled = client_get_notification_preferences_for_current_user()['message_notifications'];
+} catch (Throwable) {
+    $clientMessageNotificationsEnabled = true;
+}
+
+$clientChatUnreadConversations = 0;
+try {
+    $clientChatUnreadConversations = $clientMessageNotificationsEnabled
+        ? client_unread_chat_conversations_count()
+        : 0;
+} catch (Throwable) {
+    $clientChatUnreadConversations = 0;
+}
+
+$clientIsMinor = false;
+try {
+    $stmt = db()->prepare('SELECT has_guardian FROM users WHERE user_id = ? LIMIT 1');
+    $stmt->execute([client_current_user_id()]);
+    $clientIsMinor = !empty($stmt->fetchColumn());
+} catch (Throwable) {
+    $clientIsMinor = false;
+}
 
 function client_sidebar_li_class(string $key, string $active): string
 {
@@ -22,26 +41,32 @@ function client_sidebar_li_class(string $key, string $active): string
 ?>
 
 <style>
-  /* Keep sidebar usable across pages with different CSS bundles loaded */
   .sidebar {
+    position: fixed;
+    top: 0;
     height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
+    z-index: 1500;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .sidebar .sidebar-scroll {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
 
   .sidebar .sidebar-scroll ul {
-    overflow: visible; /* scrolling handled by .sidebar-scroll */
+    overflow: visible;
   }
 
-  /* Logout: same layout as other buttons, but red + right hover decoration */
   .sidebar .logout-btn {
     width: 100%;
     display: flex;
@@ -71,6 +96,26 @@ function client_sidebar_li_class(string $key, string $active): string
     text-align: center;
     font-size: 18px;
   }
+
+  .sidebar .sidebar-chat-link {
+    position: relative;
+  }
+
+  .sidebar .sidebar-chat-badge.unread-badge {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    background: #30b7c4;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 </style>
 
 <aside class="sidebar">
@@ -82,7 +127,12 @@ function client_sidebar_li_class(string $key, string $active): string
     <div class="user-card">
       <div class="user-info">
         <div class="user-greeting">مرحباً،</div>
-        <div class="user-name"><?= e(client_display_name()) ?></div>
+        <div class="user-name">
+          <?= e(client_display_name()) ?>
+          <?php if ($clientIsMinor): ?>
+            <div style="color: #dc2626; font-size: 11px; margin-top: 4px; font-weight: bold;">تحت إشراف ولي أمر</div>
+          <?php endif; ?>
+        </div>
         <div class="user-role">مريض</div>
       </div>
     </div>
@@ -103,9 +153,14 @@ function client_sidebar_li_class(string $key, string $active): string
       </li>
 
       <li<?= client_sidebar_li_class('chat', (string) $clientSidebarActive) ?>>
-        <a href="../client-chat-page/chat.php">
+        <a href="../client-chat-page/chat.php" class="sidebar-chat-link">
           <img src="../images/Icon2.svg" alt="" />
           الرسائل
+          <span
+            id="clientChatSidebarBadge"
+            class="unread-badge sidebar-chat-badge global-msg-badge"
+            <?= $clientChatUnreadConversations > 0 ? '' : ' style="display:none;"' ?>
+          ><?= $clientChatUnreadConversations > 0 ? (int) $clientChatUnreadConversations : '' ?></span>
         </a>
       </li>
 
@@ -124,9 +179,10 @@ function client_sidebar_li_class(string $key, string $active): string
       </li>
 
       <li<?= client_sidebar_li_class('notifications', (string) $clientSidebarActive) ?>>
-        <a href="../client-notifications-page/notifications.php">
+        <a href="../client-notifications-page/notifications.php" class="sidebar-chat-link">
           <img src="../images/Icon6.svg" alt="" />
           الإشعارات
+          <span class="unread-badge sidebar-chat-badge global-notif-badge" style="display:none;"></span>
         </a>
       </li>
 
@@ -138,7 +194,7 @@ function client_sidebar_li_class(string $key, string $active): string
       </li>
 
       <li class="logout-item">
-        <form method="post" action="/That-Copy/Auth/handlers/logout.php">
+        <form method="post" action="/That-Copy/Public/handlers/logout.php">
           <?= csrf_input() ?>
           <input type="hidden" name="action" value="logout" />
           <button class="logout-btn" id="logoutBtn" type="submit" aria-label="تسجيل الخروج">
@@ -150,30 +206,7 @@ function client_sidebar_li_class(string $key, string $active): string
     </ul>
   </div>
 </aside>
-<script>
-  (() => {
-    const dot = document.getElementById("notificationDot");
-    if (!dot) return;
-
-    fetch("/That-Copy/Client/client-notifications-page/notifications.php?action=badge_state", {
-      method: "GET",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      cache: "no-store",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("badge_state_failed");
-        }
-        return response.json();
-      })
-      .then((payload) => {
-        const hasUnread = Boolean(payload && payload.success && payload.has_unread);
-        dot.style.display = hasUnread ? "block" : "none";
-      })
-      .catch(() => {
-        // Keep server-rendered fallback state if request fails.
-      });
-  })();
-</script>
+<script src="/That-Copy/Public/js/realtime-badges.js"></script>
+<!-- sweet alert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/That-Copy/Public/js/sweet-alerts.js"></script>

@@ -42,6 +42,8 @@ const questions = [
 
 let currentQuestion = 0;
 let totalScore = 0;
+let answers = [];
+const answerLabels = {2: 'تنطبق كثيراً', 1: 'تنطبق أحياناً', 0: 'لا تنطبق'};
 
 const container = document.getElementById("questionContainer");
 const progress = document.getElementById("progressBar");
@@ -65,6 +67,7 @@ function showQuestion() {
 }
 
 function nextQ(val) {
+  answers.push({q: currentQuestion + 1, value: val, label: answerLabels[val] || ''});
   totalScore += val;
   currentQuestion++;
 
@@ -77,10 +80,15 @@ function nextQ(val) {
 
 function showResult() {
   let level = "";
+  let storageLevel = "";
 
   if (totalScore <= 23) level = "توتر منخفض";
   else if (totalScore <= 46) level = "توتر متوسط";
   else level = "توتر مرتفع";
+
+  if (totalScore <= 23) storageLevel = "LOW";
+  else if (totalScore <= 46) storageLevel = "MEDIUM";
+  else storageLevel = "HIGH";
 
   container.innerHTML = `
 
@@ -105,6 +113,10 @@ ${
 
 </div>
 `;
+
+// Save to database
+saveResult(window.ASSESSMENT_ID, answers, totalScore, storageLevel, null);
+
 }
 
 showQuestion();

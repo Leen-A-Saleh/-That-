@@ -246,6 +246,7 @@ answers:[
 ];
 
 let currentQuestion=0;
+let answers=[];
 
 let inScore=0;
 let hyperScore=0;
@@ -276,6 +277,10 @@ progress.style.width=((currentQuestion+1)/questions.length)*100+"%";
 }
 
 function nextQuestion(value){
+
+var q=questions[currentQuestion];
+var selectedAnswer=q.answers.find(function(a){return a.score===value;});
+answers.push({q:currentQuestion+1, value:value, label:selectedAnswer?selectedAnswer.text:''});
 
 if(currentQuestion<=8) inScore+=value;
 else if(currentQuestion<=17) hyperScore+=value;
@@ -338,6 +343,15 @@ container.innerHTML=`
 
 </div>
 `;
+
+// Save to database
+var totalScore=inScore+hyperScore+oddScore;
+var rawResult={
+  inattention:{score:inScore, level:getLevel(inScore,"IN")},
+  hyperactivity:{score:hyperScore, level:getLevel(hyperScore,"H")},
+  oppositional_defiant:{score:oddScore, level:getLevel(oddScore,"ODD")}
+};
+saveResult(window.ASSESSMENT_ID, answers, totalScore, rawResult);
 
 }
 

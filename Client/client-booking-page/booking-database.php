@@ -1,23 +1,39 @@
 <?php
+
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/auth.php';
 require_once __DIR__ . '/../../Database/db.php';
+require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
+require_once __DIR__ . '/../../Database/appointments-database.php';
+require_once __DIR__ . '/../../Database/notifications-database.php';
 
-function getCurrentClientId()
+// ─── Utilities
+
+function getCurrentClientId(): int
 {
-    $user = current_user();
-
-    if (!$user || empty($user['user_id'])) {
+    try {
+        return client_current_user_id();
+    } catch (Throwable) {
         return 0;
     }
-
-    return (int) $user['user_id'];
 }
 
-function getBookingTherapist($therapistId)
+// ─── Lookup
+
+/**
+ * @return array<string, mixed>|null
+ */
+function getBookingTherapist(int $therapistId): ?array
 {
-    $sql = "
-        SELECT
+    if ($therapistId <= 0) {
+        return null;
+    }
+
+    $statement = db()->prepare(
+        'SELECT
             u.user_id,
             u.name,
             u.email,
@@ -26,79 +42,80 @@ function getBookingTherapist($therapistId)
             t.certification,
             t.bio,
             t.experience_years
-        FROM users u
-        INNER JOIN therapists t ON t.therapist_id = u.user_id
-        WHERE u.user_id = ?
-          AND u.role = 'THERAPIST'
-          AND u.is_active = 1
-        LIMIT 1
-    ";
-
-    $statement = db()->prepare($sql);
-    $statement->execute([$therapistId]);
+         FROM users u
+         INNER JOIN therapists t ON t.therapist_id = u.user_id
+         WHERE u.user_id = :therapist_id
+           AND u.role = :role
+           AND u.is_active = 1
+         LIMIT 1'
+    );
+    $statement->execute([
+        'therapist_id' => $therapistId,
+        'role' => 'THERAPIST',
+    ]);
     $row = $statement->fetch();
 
     if (!$row) {
         return null;
     }
 
-    $image = $row['avatar'];
-    if (!$image) {
+    $image = trim((string) ($row['avatar'] ?? ''));
+    if ($image === '') {
         $image = '../images/default-doctor.png';
     }
 
-    $experience = trim((string) $row['bio']);
-    if ((int) $row['experience_years'] > 0) {
-        $experience = 'خبرة ' . (int) $row['experience_years'] . ' سنوات';
-    }
+    $experienceYears = (int) ($row['experience_years'] ?? 0);
+    $experience = $experienceYears > 0
+        ? 'خبرة ' . $experienceYears . ' سنوات'
+        : trim((string) ($row['bio'] ?? ''));
 
     return [
         'id' => (int) $row['user_id'],
-        'name' => $row['name'],
+        'name' => (string) $row['name'],
         'image' => $image,
-        'special' => $row['specialization'],
-        'degree' => $row['certification'],
+        'special' => (string) ($row['specialization'] ?? ''),
+        'degree' => (string) ($row['certification'] ?? ''),
         'experience' => $experience,
         'work' => getTherapistWorkText($therapistId),
         'availability' => getTherapistAvailability($therapistId),
-        'email' => $row['email'],
+        'email' => (string) ($row['email'] ?? ''),
         'consultPrice' => '150 شيكل',
         'therapyPrice' => '120 شيكل',
     ];
 }
 
-function getTherapistAvailability($therapistId)
+/**
+ * @return list<array{day:string, day_label:string, start:string, end:string}>
+ */
+function getTherapistAvailability(int $therapistId): array
 {
-    $sql = "
-        SELECT day_of_week, start_time, end_time
-        FROM therapist_availability
-        WHERE therapist_id = ?
-          AND is_active = 1
-        ORDER BY day_of_week, start_time
-    ";
-
-    $statement = db()->prepare($sql);
-    $statement->execute([$therapistId]);
-    $rows = $statement->fetchAll();
+    $statement = db()->prepare(
+        'SELECT day_of_week, start_time, end_time
+         FROM therapist_availability
+         WHERE therapist_id = :therapist_id
+           AND is_active = 1
+         ORDER BY day_of_week, start_time'
+    );
+    $statement->execute(['therapist_id' => $therapistId]);
 
     $availability = [];
-    foreach ($rows as $row) {
+    foreach ($statement->fetchAll() as $row) {
         $availability[] = [
-            'day' => $row['day_of_week'],
-            'day_label' => getArabicDay($row['day_of_week']),
-            'start' => substr($row['start_time'], 0, 5),
-            'end' => substr($row['end_time'], 0, 5),
+            'day' => (string) ($row['day_of_week'] ?? ''),
+            'day_label' => client_translate_day((string) ($row['day_of_week'] ?? '')),
+            'start' => substr((string) ($row['start_time'] ?? ''), 0, 5),
+            'end' => substr((string) ($row['end_time'] ?? ''), 0, 5),
         ];
     }
 
     return $availability;
 }
 
-function getTherapistWorkText($therapistId)
+function getTherapistWorkText(int $therapistId): string
 {
     $availability = getTherapistAvailability($therapistId);
 
-    if (count($availability) === 0) {
+    if ($availability === []) {
         return 'غير متاح';
     }
 
@@ -110,8 +127,19 @@ function getTherapistWorkText($therapistId)
     return implode(' | ', $text);
 }
 
-function saveBookingRequest($clientId, $therapistId, $sessionType, $meetingType, $date, $time)
-{
+// ─── Booking
+
+/**
+ * @return array{success:bool, message:string, appointment_id?:int}
+ */
+function saveBookingRequest(
+    int $clientId,
+    int $therapistId,
+    string $sessionType,
+    string $meetingType,
+    string $date,
+    string $time
+): array {
     if ($clientId <= 0 || $therapistId <= 0) {
         return ['success' => false, 'message' => 'بيانات الحجز غير صحيحة.'];
     }
@@ -148,132 +176,171 @@ function saveBookingRequest($clientId, $therapistId, $sessionType, $meetingType,
         return ['success' => false, 'message' => 'الوقت المختار غير متاح لهذا الأخصائي.'];
     }
 
-    if (isAppointmentTaken($therapistId, $dateTimeText)) {
+    if (hasConfirmedAppointmentAt($therapistId, $dateTimeText)) {
         return ['success' => false, 'message' => 'هذا الموعد محجوز مسبقا.'];
     }
 
     $caseId = getClientCaseId($clientId, $therapistId);
+    $amount = getBookingPaymentAmount($sessionType);
+    $pdo = db();
 
-    $sql = "
-        INSERT INTO appointments
-            (case_id, therapist_id, client_id, date_time, duration_min, mode, status)
-        VALUES
-            (?, ?, ?, ?, 60, ?, 'REQUESTED')
-    ";
+    try {
+        $pdo->beginTransaction();
 
-    $statement = db()->prepare($sql);
-    $statement->execute([
-        $caseId,
-        $therapistId,
-        $clientId,
-        $dateTimeText,
-        $mode,
-    ]);
+        $statement = $pdo->prepare(
+            'INSERT INTO appointments
+            (
+                case_id,
+                therapist_id,
+                client_id,
+                session_type,
+                date_time,
+                duration_min,
+                mode,
+                status
+            )
+         VALUES
+            (
+                :case_id,
+                :therapist_id,
+                :client_id,
+                :session_type,
+                :date_time,
+                60,
+                :mode,
+                :status
+            )'
+        );
+
+        $statement->execute([
+            'case_id' => $caseId,
+            'therapist_id' => $therapistId,
+            'client_id' => $clientId,
+
+            'session_type' => $sessionType === 'consult'
+                ? 'CONSULTATION'
+                : 'THERAPY',
+
+            'date_time' => $dateTimeText,
+            'mode' => $mode,
+            'status' => 'REQUESTED',
+        ]);
+
+        $appointmentId = (int) $pdo->lastInsertId();
+
+        $paymentStatement = $pdo->prepare(
+            'INSERT INTO payments
+            (
+                client_id,
+                therapist_id,
+                amount
+            )
+         VALUES
+            (
+                :client_id,
+                :therapist_id,
+                :amount
+            )'
+        );
+        $paymentStatement->execute([
+            'client_id' => $clientId,
+            'therapist_id' => $therapistId,
+            'amount' => $amount,
+        ]);
+
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $error;
+    }
+
+    try {
+        notify_therapist_new_appointment_request(
+            $therapistId,
+            $clientId,
+            $dateTimeText,
+            $sessionType
+        );
+    } catch (Throwable) {
+        // Notification failure must not undo a successful booking request
+    }
 
     return [
         'success' => true,
-        'appointment_id' => (int) db()->lastInsertId(),
+        'appointment_id' => $appointmentId,
         'message' => 'تم إرسال طلب الحجز بنجاح. بانتظار موافقة الأخصائي.',
     ];
 }
 
-function isClientExists($clientId)
+function getBookingPaymentAmount(string $sessionType): string
 {
-    $statement = db()->prepare('SELECT client_id FROM clients WHERE client_id = ? LIMIT 1');
-    $statement->execute([$clientId]);
+    return $sessionType === 'consult' ? '150.00' : '120.00';
+}
+
+// ─── Validation Helpers
+
+function isClientExists(int $clientId): bool
+{
+    $statement = db()->prepare(
+        'SELECT client_id
+         FROM clients
+         WHERE client_id = :client_id
+         LIMIT 1'
+    );
+    $statement->execute(['client_id' => $clientId]);
 
     return (bool) $statement->fetch();
 }
 
-function getClientCaseId($clientId, $therapistId)
+function getClientCaseId(int $clientId, int $therapistId): ?int
 {
-    $sql = "
-        SELECT case_id
-        FROM cases
-        WHERE client_id = ?
-          AND therapist_id = ?
-          AND status <> 'CLOSED'
-        ORDER BY case_id DESC
-        LIMIT 1
-    ";
-
-    $statement = db()->prepare($sql);
-    $statement->execute([$clientId, $therapistId]);
+    $statement = db()->prepare(
+        'SELECT case_id
+         FROM cases
+         WHERE client_id = :client_id
+           AND therapist_id = :therapist_id
+           AND status <> :status
+         ORDER BY case_id DESC
+         LIMIT 1'
+    );
+    $statement->execute([
+        'client_id' => $clientId,
+        'therapist_id' => $therapistId,
+        'status' => 'CLOSED',
+    ]);
     $caseId = $statement->fetchColumn();
 
-    if (!$caseId) {
+    if ($caseId === false) {
         return null;
     }
 
     return (int) $caseId;
 }
 
-function isTherapistAvailableAt($therapistId, $dateTime)
+function isTherapistAvailableAt(int $therapistId, DateTime $dateTime): bool
 {
     $day = strtoupper($dateTime->format('l'));
     $time = $dateTime->format('H:i:s');
 
-    $sql = "
-        SELECT availability_id
-        FROM therapist_availability
-        WHERE therapist_id = ?
-          AND day_of_week = ?
-          AND is_active = 1
-          AND start_time <= ?
-          AND end_time > ?
-        LIMIT 1
-    ";
-
-    $statement = db()->prepare($sql);
-    $statement->execute([$therapistId, $day, $time, $time]);
-
-    return (bool) $statement->fetch();
-}
-
-function isAppointmentTaken($therapistId, $dateTimeText)
-{
-    $sql = "
-        SELECT appointment_id
-        FROM appointments
-        WHERE therapist_id = ?
-          AND date_time = ?
-          AND status IN ('REQUESTED', 'CONFIRMED')
-        LIMIT 1
-    ";
-
-    $statement = db()->prepare($sql);
-    $statement->execute([$therapistId, $dateTimeText]);
+    $statement = db()->prepare(
+        'SELECT availability_id
+         FROM therapist_availability
+         WHERE therapist_id = :therapist_id
+           AND day_of_week = :day_of_week
+           AND is_active = 1
+           AND start_time <= :start_bound
+           AND end_time > :end_bound
+         LIMIT 1'
+    );
+    $statement->execute([
+        'therapist_id' => $therapistId,
+        'day_of_week' => $day,
+        'start_bound' => $time,
+        'end_bound' => $time,
+    ]);
 
     return (bool) $statement->fetch();
-}
-
-function hasUnreadNotifications()
-{
-    $clientId = getCurrentClientId();
-
-    $statement = db()->prepare("
-        SELECT notification_id
-        FROM notifications
-        WHERE user_id = ?
-          AND is_read = 0
-        LIMIT 1
-    ");
-    $statement->execute([$clientId]);
-
-    return (bool) $statement->fetch();
-}
-
-function getArabicDay($day)
-{
-    $days = [
-        'SUNDAY' => 'الأحد',
-        'MONDAY' => 'الإثنين',
-        'TUESDAY' => 'الثلاثاء',
-        'WEDNESDAY' => 'الأربعاء',
-        'THURSDAY' => 'الخميس',
-        'FRIDAY' => 'الجمعة',
-        'SATURDAY' => 'السبت',
-    ];
-
-    return $days[$day] ?? $day;
 }

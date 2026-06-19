@@ -113,6 +113,8 @@ select {
   border-radius: 20px;
   text-align: center;
   width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   border: 4px solid #4db6ac;
 }
@@ -136,4 +138,22 @@ select {
   color: white;
   font-size: 16px;
   cursor: pointer;
+}
+
+.history-item {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 10px;
+  background: #eefbf9;
+  border: 1px solid #4db6ac;
+  border-radius: 10px;
+  color: #02645a;
+  font-size: 14px;
+  text-align: right;
+}
+
+.history-item small {
+  color: #555;
+  font-size: 12px;
 }

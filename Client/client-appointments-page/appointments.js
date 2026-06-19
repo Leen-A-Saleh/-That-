@@ -8,19 +8,27 @@ if (userNameEl && typeof CURRENT_USER_NAME !== 'undefined') {
 
 // Status label map 
 const STATUS_LABELS = {
-  confirmed  : 'قادم',
-  completed  : 'مكتمل',
-  cancelled  : 'ملغي',
-  pending    : 'قيد الانتظار',
-  requested  : 'قيد الانتظار',
+  confirmed           : 'قادم',
+  completed           : 'مكتمل',
+  cancelled           : 'ملغي',
+  pending             : 'قيد الانتظار',
+  requested           : 'قيد الانتظار',
+  awaiting_payment    : 'بانتظار الدفع',
+  rejected            : 'مرفوض',
+  payment_expired     : 'انتهت مهلة الدفع',
+  cancelled_by_client : 'ملغي من قبلك',
 };
 
 const STATUS_CSS = {
-  confirmed  : 'status-upcoming',
-  completed  : 'status-finished',
-  cancelled  : 'status-cancelled',
-  pending    : 'status-upcoming',
-  requested  : 'status-upcoming',
+  confirmed           : 'status-upcoming',
+  completed           : 'status-finished',
+  cancelled           : 'status-cancelled',
+  pending             : 'status-upcoming',
+  requested           : 'status-upcoming',
+  awaiting_payment    : 'status-upcoming',
+  rejected            : 'status-cancelled',
+  payment_expired     : 'status-cancelled',
+  cancelled_by_client : 'status-cancelled',
 };
 
 // Calendar 
@@ -140,6 +148,8 @@ function renderAppointmentsList() {
     return da - db;
   });
 
+  const defaultAvatar = '../images/default-doctor.png';
+
   sorted.forEach(a => {
     const card        = document.createElement('div');
     card.className    = 'appointment-card';
@@ -147,9 +157,26 @@ function renderAppointmentsList() {
     const labelText   = STATUS_LABELS[a.status] ?? a.status;
     const cssClass    = STATUS_CSS[a.status]    ?? 'status-upcoming';
 
-    const actionHtml  = a.status === 'confirmed'
-      ? `<span class="waiting-link">سيتم إرسال رابط الجلسة لاحقاً</span>`
-      : '';
+    let actionHtml = '';
+    if (a.status === 'confirmed') {
+      actionHtml = `
+        <span class="waiting-link" style="display:block; margin-bottom:5px;">سيتم إرسال رابط الجلسة لاحقاً</span>
+        <button onclick="cancelAppointment(${a.id})" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:12px; text-decoration:underline;">إلغاء الموعد (مسترد 50%)</button>
+      `;
+    } else if (a.status === 'awaiting_payment') {
+      actionHtml = `
+        <a href="../../Public/handlers/mock-checkout.php?appointment_id=${a.id}" style="display:inline-block; padding:6px 12px; background-color:#2563eb; color:white; text-decoration:none; border-radius:4px; font-size:13px; margin-top:8px;">ادفع الآن لتأكيد الحجز</a>
+      `;
+    }
+
+    const avatarHtml = a.therapist_avatar
+      ? `<div class="avatar-circle avatar-circle--image">
+          <img src="${a.therapist_avatar}" alt="" />
+          <span class="avatar-initial">${firstLetter}</span>
+        </div>`
+      : `<div class="avatar-circle">
+          <span class="avatar-initial">${firstLetter}</span>
+        </div>`;
 
     card.innerHTML = `
       <div class="appointment-info">
@@ -161,10 +188,35 @@ function renderAppointmentsList() {
         </div>
         ${actionHtml}
       </div>
-      <div class="avatar-circle">${firstLetter}</div>
+      ${avatarHtml}
     `;
 
+    const avatarImg = card.querySelector('.avatar-circle img');
+    if (avatarImg) {
+      avatarImg.addEventListener('error', function () {
+        this.src = defaultAvatar;
+        this.classList.add('avatar-img-fallback');
+      });
+    }
+
     container.appendChild(card);
+  });
+}
+
+function cancelAppointment(id) {
+  if (!confirm('هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟ سيتم استرداد 50% فقط من المبلغ المدفوع.')) return;
+  fetch('cancel.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'appointment_id=' + encodeURIComponent(id)
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    if (data.success) location.reload();
+  })
+  .catch(err => {
+    alert('حدث خطأ أثناء الإلغاء.');
   });
 }
 

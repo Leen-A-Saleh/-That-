@@ -1,6 +1,5 @@
 let overlay = document.querySelector(".sidebar-overlay");
 const menuBtn = document.querySelector(".menu-btn");
-const logoutBtn = document.getElementById("logoutBtn");
 const sidebar = document.querySelector(".sidebar");
 
 if (!overlay) {
@@ -18,13 +17,6 @@ overlay.addEventListener("click", () => {
   sidebar.classList.remove("open");
   overlay.classList.remove("open");
 });
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", function () {
-    localStorage.removeItem("token");
-    window.location.href = "../login-page/login.php";
-  });
-}
 
 // ─── Charts ───────────────────────────────────────────────────────────────────
 // WEEKLY_DATA and GROWTH_DATA are injected by admin-dashboard.php as globals.

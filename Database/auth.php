@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
 
-// Login
+// ─── Login
 
 function login_user(string $email, string $password): bool
 {
@@ -47,11 +47,12 @@ function login_user(string $email, string $password): bool
     $_SESSION['user_role'] = $_SESSION['auth']['role'];
 
     record_login_activity((int) $user['user_id']);
+    bind_user_session_version((int) $user['user_id']);
 
     return true;
 }
 
-//  Login activity
+// ─── Login Activity
 
 function request_client_ip(): string
 {
@@ -125,8 +126,6 @@ function parse_login_user_agent(string $userAgent): array
 }
 
 /**
- *
- *
  * @return array{country: ?string, city: ?string}
  */
 function geolocate_ip_for_login(string $ip): array
@@ -163,9 +162,39 @@ function geolocate_ip_for_login(string $ip): array
     ];
 }
 
+function ensure_login_activities_table(): void
+{
+    static $ensured = false;
+
+    if ($ensured) {
+        return;
+    }
+
+    $ensured = true;
+
+    db()->exec(
+        'CREATE TABLE IF NOT EXISTS login_activities (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            login_date DATE NOT NULL,
+            login_time TIME NOT NULL,
+            browser VARCHAR(100) NULL,
+            os VARCHAR(100) NULL,
+            ip_address VARCHAR(45) NULL,
+            country VARCHAR(100) NULL,
+            city VARCHAR(100) NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_login_user (user_id),
+            INDEX idx_login_created (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
+}
+
 function record_login_activity(int $userId): void
 {
     try {
+        ensure_login_activities_table();
+
         $ip = request_client_ip();
         $ua = parse_login_user_agent((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
         $geo = geolocate_ip_for_login($ip);
@@ -186,11 +215,170 @@ function record_login_activity(int $userId): void
             $geo['city'],
         ]);
     } catch (\Throwable $e) {
-        // Do not block sign-in if logging fails (schema mismatch, DB down, etc.)
+        // Do not block sign-in if logging fails
     }
 }
 
-// Logout 
+// ─── Logout
+
+function users_table_columns(bool $refresh = false): array
+{
+    static $columns = null;
+
+    if ($refresh) {
+        $columns = null;
+    }
+
+    if ($columns === null) {
+        try {
+            $stmt = db()->query('SHOW COLUMNS FROM users');
+            $columns = array_map(
+                static fn(array $row): string => (string) ($row['Field'] ?? ''),
+                $stmt->fetchAll()
+            );
+        } catch (\Throwable $e) {
+            $columns = [];
+        }
+    }
+
+    return $columns;
+}
+
+function users_has_column(string $column): bool
+{
+    return in_array($column, users_table_columns(), true);
+}
+
+function ensure_users_session_version_column(): void
+{
+    static $ensured = false;
+
+    if ($ensured) {
+        return;
+    }
+
+    $ensured = true;
+
+    if (users_has_column('session_version')) {
+        return;
+    }
+
+    try {
+        db()->exec('ALTER TABLE users ADD COLUMN session_version INT UNSIGNED NOT NULL DEFAULT 0');
+        users_table_columns(true);
+    } catch (\Throwable $e) {
+    }
+}
+
+function get_user_session_version(int $userId): int
+{
+    if ($userId <= 0) {
+        return 0;
+    }
+
+    ensure_users_session_version_column();
+
+    if (!users_has_column('session_version')) {
+        return 0;
+    }
+
+    try {
+        $stmt = db()->prepare('SELECT session_version FROM users WHERE user_id = ? LIMIT 1');
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['session_version'] ?? 0);
+    } catch (\Throwable $e) {
+        return 0;
+    }
+}
+
+function bind_user_session_version(int $userId): void
+{
+    if ($userId <= 0 || !isset($_SESSION['auth']) || !is_array($_SESSION['auth'])) {
+        return;
+    }
+
+    $_SESSION['auth']['session_version'] = get_user_session_version($userId);
+}
+
+function invalidate_all_user_sessions(int $userId): bool
+{
+    if ($userId <= 0) {
+        return false;
+    }
+
+    ensure_users_session_version_column();
+
+    if (!users_has_column('session_version')) {
+        return false;
+    }
+
+    try {
+        $stmt = db()->prepare(
+            'UPDATE users SET session_version = session_version + 1 WHERE user_id = ? LIMIT 1'
+        );
+        $stmt->execute([$userId]);
+
+        return $stmt->rowCount() >= 0;
+    } catch (\Throwable $e) {
+        return false;
+    }
+}
+
+function assert_valid_user_session(): void
+{
+    if (!is_authenticated()) {
+        return;
+    }
+
+    ensure_users_session_version_column();
+
+    if (!users_has_column('session_version')) {
+        return;
+    }
+
+    $userId = (int) ($_SESSION['auth']['user_id'] ?? 0);
+    if ($userId <= 0) {
+        return;
+    }
+
+    $currentVersion = get_user_session_version($userId);
+
+    if (!isset($_SESSION['auth']['session_version'])) {
+        $_SESSION['auth']['session_version'] = $currentVersion;
+
+        return;
+    }
+
+    $sessionVersion = (int) $_SESSION['auth']['session_version'];
+    if ($sessionVersion === $currentVersion) {
+        return;
+    }
+
+    logout_user();
+
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+        && stripos((string) $_SERVER['HTTP_X_REQUESTED_WITH'], 'xmlhttprequest') !== false;
+
+    if ($isAjax) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'انتهت الجلسة. يرجى تسجيل الدخول مجدداً.',
+            'redirect' => '/That-Copy/Public/login/index.php',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    redirect('/That-Copy/Public/login/index.php');
+}
+
+function logout_user_from_all_devices(int $userId): bool
+{
+    return invalidate_all_user_sessions($userId);
+}
 
 function logout_user(): void
 {
@@ -204,8 +392,6 @@ function logout_user(): void
     session_destroy();
 }
 
-/**
- */
 function handle_logout_post(?string $redirectTo = null): void
 {
     start_secure_session();
@@ -225,10 +411,10 @@ function handle_logout_post(?string $redirectTo = null): void
 
     logout_user();
 
-    redirect($redirectTo ?: '/That-Copy/Auth/login/index.php');
+    redirect($redirectTo ?: '/That-Copy/Public/login/index.php');
 }
 
-// Session helpers 
+// ─── Session Helpers
 
 function current_user(): ?array
 {
@@ -243,8 +429,10 @@ function is_authenticated(): bool
 function require_auth(): void
 {
     if (!is_authenticated()) {
-        redirect('/That-Copy/Auth/login/index.php');
+        redirect('/That-Copy/Public/login/index.php');
     }
+
+    assert_valid_user_session();
 }
 
 function require_role(array $roles): void
@@ -259,7 +447,6 @@ function require_role(array $roles): void
     }
 }
 
-/** Admin UI and admin-only endpoints: login required, role must be ADMIN. */
 function require_admin(): void
 {
     require_auth();
@@ -269,7 +456,7 @@ function require_admin(): void
     }
 }
 
-//  Existence checks 
+// ─── Existence Checks
 
 function username_exists(string $username): bool
 {
@@ -285,7 +472,7 @@ function email_exists(string $email): bool
     return (bool) $stmt->fetchColumn();
 }
 
-// Role routing 
+// ─── Role Routing
 
 function role_home_path(string $role): string
 {
@@ -294,13 +481,13 @@ function role_home_path(string $role): string
         return '/That-Copy/Admin/admin-dashboard-page/admin-dashboard.php';
     }
     if ($role === 'THERAPIST') {
-        return '/That-Copy/TherapistPHP/therapist/therapist-dashboard/index.php';
+        return '/That-Copy/Therapist/therapist/therapist-dashboard/index.php';
     }
     return '/That-Copy/Client/client-dashboard-page/index.php';
 }
 
 
-//  Login handler 
+// ─── Login Handler
 
 function process_login_request(array $post): array
 {
@@ -333,7 +520,7 @@ function process_login_request(array $post): array
     return [];
 }
 
-//  Signup (full single-POST) 
+// ─── Signup
 
 function process_full_signup(array $post): array
 {
@@ -350,6 +537,13 @@ function process_full_signup(array $post): array
     $username = trim((string) ($post['username'] ?? ''));
     $password = (string) ($post['password'] ?? '');
     $confirmPassword = (string) ($post['confirmPassword'] ?? '');
+
+    // Additional Registration Fields
+    $gender = trim((string) ($post['gender'] ?? ''));
+    $age = (int) ($post['age'] ?? 0);
+    $hasGuardian = (int) ($post['has_guardian'] ?? 0);
+    $guardianName = trim((string) ($post['guardian_name'] ?? ''));
+    $guardianPhone = trim((string) ($post['guardian_phone'] ?? ''));
 
     // Client preferences
     $treatmentType = trim((string) ($post['treatment_type'] ?? ''));
@@ -374,6 +568,7 @@ function process_full_signup(array $post): array
     $surveyAlcohol = trim((string) ($post['survey_alcohol'] ?? ''));
     $surveyDrugs = trim((string) ($post['survey_drugs'] ?? ''));
     $surveyContactPreference = trim((string) ($post['survey_contact_preference'] ?? ''));
+    $surveyParentalConsent = trim((string) ($post['survey_parental_consent'] ?? ''));
 
     // Validation
     if ($fullName === '') {
@@ -383,6 +578,16 @@ function process_full_signup(array $post): array
         $errors[] = 'البريد الإلكتروني مطلوب.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'البريد الإلكتروني غير صالح.';
+    }
+    if ($gender !== 'M' && $gender !== 'F') {
+        $errors[] = 'يرجى تحديد الجنس.';
+    }
+    if ($age > 0 && $age < 18) {
+        if ($hasGuardian !== 1) {
+            $errors[] = 'لا يمكن إنشاء حساب لمن هم أقل من 18 سنة إلا بوجود أحد الوالدين.';
+        } elseif ($guardianName === '' || $guardianPhone === '') {
+            $errors[] = 'يجب إدخال اسم ورقم هاتف ولي الأمر.';
+        }
     }
     if ($phone === '') {
         $errors[] = 'رقم الهاتف مطلوب.';
@@ -401,6 +606,19 @@ function process_full_signup(array $post): array
     if ($password !== $confirmPassword) {
         $errors[] = 'كلمتا المرور غير متطابقتين.';
     }
+    // قاعدة العمر: يُمنع إنشاء حساب لمن هم أقل من 18 سنة إلا بموافقة وحضور أحد الوالدين
+    // (تحقق خادمي حاسم؛ يُسمح فقط عند parental_consent = YES القادمة من سؤال موافقة الوالدين)
+    if ($surveyAge > 0 && $surveyAge < 18 && $surveyParentalConsent !== 'YES') {
+        $errors[] = 'لا يمكن إنشاء حساب لمن هم أقل من 18 سنة إلا بوجود وموافقة أحد الوالدين.';
+    }
+    
+    // Clear guardian info if age is 18 or older
+    if ($age >= 18) {
+        $hasGuardian = 0;
+        $guardianName = null;
+        $guardianPhone = null;
+    }
+    
     if ($errors !== []) {
         return $errors;
     }
@@ -441,10 +659,10 @@ function process_full_signup(array $post): array
 
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $stmt = db()->prepare(
-            "INSERT INTO users (name, email, phone, username, password, role)
-             VALUES (?, ?, ?, ?, ?, 'CLIENT')"
+            "INSERT INTO users (name, email, phone, username, password, role, gender, has_guardian, guardian_name, guardian_phone)
+             VALUES (?, ?, ?, ?, ?, 'CLIENT', ?, ?, ?, ?)"
         );
-        $stmt->execute([$fullName, $email, $phone, $username, $hashedPassword]);
+        $stmt->execute([$fullName, $email, $phone, $username, $hashedPassword, $gender, $hasGuardian, $guardianName, $guardianPhone]);
         $userId = (int) db()->lastInsertId();
 
         $clientSql = 'INSERT INTO clients (client_id, survey_id, gender, treatment_type, preferred_session_type, preferred_session_time)
@@ -465,7 +683,7 @@ function process_full_signup(array $post): array
     }
 }
 
-//  Forgot password (real email via PHPMailer) 
+// ─── Forgot Password
 
 function process_forgot_password_request(array $post): array
 {
@@ -501,26 +719,21 @@ function process_forgot_password_request(array $post): array
 
         // Send email
         $config = require __DIR__ . '/config.php';
-        $resetLink = $config['app_url'] . '/Auth/reset-password/index.php?token=' . $token . '&email=' . urlencode($email);
+        $resetLink = $config['app_url'] . '/Public/reset-password/index.php?token=' . $token . '&email=' . urlencode($email);
 
-        try {
-            send_reset_email($email, $resetLink, $config);
-        } catch (\Throwable $e) {
-            // Silent fail — don't reveal whether email exists
+        if (!send_reset_email($email, $resetLink, $config)) {
+            error_log('Password reset: failed to send email for ' . $email);
         }
     }
 
-    // Always show success (security: don't reveal if email exists)
     set_flash('success', 'إذا كان البريد مسجلًا، فسيتم إرسال رابط إعادة التعيين.');
     return [];
 }
 
-function send_reset_email(string $email, string $resetLink, array $config): void
+function send_reset_email(string $email, string $resetLink, array $config): bool
 {
-    // Try PHPMailer if available
     $autoloadPaths = [
         __DIR__ . '/../vendor/autoload.php',
-        __DIR__ . '/../TherapistPHP/vendor/autoload.php',
     ];
 
     $autoloaded = false;
@@ -533,24 +746,33 @@ function send_reset_email(string $email, string $resetLink, array $config): void
     }
 
     if (!$autoloaded || !class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
-        return; // PHPMailer not available
+        error_log('Password reset: PHPMailer not installed. Run composer install in project root.');
+
+        return false;
     }
 
-    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
-    $mail->isSMTP();
-    $mail->Host = $config['mail_host'];
-    $mail->SMTPAuth = true;
-    $mail->Port = $config['mail_port'];
-    $mail->Username = $config['mail_username'];
-    $mail->Password = $config['mail_password'];
+    try {
+        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = (string) ($config['mail_host'] ?? '');
+        $mail->SMTPAuth = true;
+        $mail->Port = (int) ($config['mail_port'] ?? 587);
+        $mail->Username = (string) ($config['mail_username'] ?? '');
+        $mail->Password = (string) ($config['mail_password'] ?? '');
 
-    $mail->setFrom($config['mail_from'], $config['mail_from_name']);
-    $mail->addAddress($email);
-    $mail->CharSet = 'UTF-8';
+        $encryption = strtolower((string) ($config['mail_encryption'] ?? 'tls'));
+        if ($encryption === 'tls') {
+            $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        } elseif ($encryption === 'ssl') {
+            $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+        }
 
-    $mail->isHTML(true);
-    $mail->Subject = 'إعادة تعيين كلمة المرور';
-    $mail->Body = "
+        $mail->setFrom((string) ($config['mail_from'] ?? ''), (string) ($config['mail_from_name'] ?? ''));
+        $mail->addAddress($email);
+        $mail->CharSet = 'UTF-8';
+        $mail->isHTML(true);
+        $mail->Subject = 'إعادة تعيين كلمة المرور';
+        $mail->Body = "
         <div dir='rtl' style='font-family: Cairo, sans-serif;'>
             <h2>إعادة تعيين كلمة المرور</h2>
             <p>لقد طلبت إعادة تعيين كلمة المرور. اضغط على الرابط أدناه:</p>
@@ -559,10 +781,17 @@ function send_reset_email(string $email, string $resetLink, array $config): void
         </div>
     ";
 
-    $mail->send();
+        $mail->send();
+
+        return true;
+    } catch (\Throwable $e) {
+        error_log('Password reset mail error: ' . $e->getMessage());
+
+        return false;
+    }
 }
 
-// Reset password 
+// ─── Reset Password
 
 function validate_reset_token(string $token, string $email): bool
 {

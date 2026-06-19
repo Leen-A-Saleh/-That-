@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../Database/db.php';
 require_once __DIR__ . '/../../Database/helpers.php';
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 function users_getStats(): array
 {
     $row = db()->query("
@@ -17,9 +19,9 @@ function users_getStats(): array
     ")->fetch();
 
     $sessions = (int) db()->query("
-    SELECT COUNT(*) 
-    FROM sessions
-")->fetchColumn();
+        SELECT COUNT(*)
+        FROM sessions
+    ")->fetchColumn();
 
     return [
         'total' => (int) $row['total'],
@@ -28,6 +30,8 @@ function users_getStats(): array
         'sessions' => $sessions,
     ];
 }
+
+// ─── Fetch All ────────────────────────────────────────────────────────────────
 
 function users_getAll(): array
 {
@@ -50,6 +54,9 @@ function users_getAll(): array
     ");
     return $stmt->fetchAll();
 }
+
+// ─── Create ───────────────────────────────────────────────────────────────────
+
 function users_add(string $name, string $email, string $phone, string $status): int
 {
     $name  = trim($name);
@@ -106,9 +113,8 @@ function users_add(string $name, string $email, string $phone, string $status): 
     }
 }
 
-/**
- * @throws RuntimeException if user not found
- */
+// ─── Update ───────────────────────────────────────────────────────────────────
+
 function users_update(int $id, string $name, string $email, string $phone, string $status): void
 {
     if ($id <= 0 || $name === '' || $email === '') {
@@ -138,10 +144,8 @@ function users_update(int $id, string $name, string $email, string $phone, strin
     }
 }
 
-/**
- * @return string  
- * @throws RuntimeException if user not found
- */
+// ─── Toggle Status ────────────────────────────────────────────────────────────
+
 function users_toggleStatus(int $id): string
 {
     $pdo = db();
@@ -165,10 +169,8 @@ function users_toggleStatus(int $id): string
     return $newVal === 1 ? 'active' : 'suspended';
 }
 
-/**
- *
- * @throws RuntimeException if user not found
- */
+// ─── Delete ───────────────────────────────────────────────────────────────────
+
 function users_delete(int $id): void
 {
     $pdo = db();

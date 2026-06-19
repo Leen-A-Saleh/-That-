@@ -1,7 +1,11 @@
 <?php
+
+declare(strict_types=1);
+
 require_once __DIR__ . '/booking-database.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
 
 $therapistId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -52,7 +56,7 @@ if ($therapistId <= 0) {
 
 try {
   $doctor = getBookingTherapist($therapistId);
-  $availability = getTherapistAvailability($therapistId);
+  $availability = $doctor['availability'] ?? [];
 } catch (Throwable $error) {
   $doctor = null;
   $availability = [];
@@ -181,6 +185,7 @@ if (!$doctor) {
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
   <script src="./booking.js"></script>
+  <div class="sidebar-overlay"></div>
 </body>
 
 </html>

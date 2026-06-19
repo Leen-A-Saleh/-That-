@@ -31,10 +31,10 @@ function get_dashboard_stats(): array
 
     $canceledResults = (int) $pdo
         ->query("
-        SELECT COUNT(*)
-        FROM assessment_results
-        WHERE UPPER(status) = 'CANCELED'
-    ")
+            SELECT COUNT(*)
+            FROM assessment_results
+            WHERE UPPER(status) IN ('PENDING', 'FAILED', 'CANCELED')
+        ")
         ->fetchColumn();
 
     $nonCanceledResults = $totalResults - $canceledResults;
@@ -45,6 +45,10 @@ function get_dashboard_stats(): array
 
     $rating = (float) ($pdo->query(
         "SELECT ROUND(AVG(rating), 1) FROM therapists WHERE rating > 0"
+    )->fetchColumn() ?? 0.0);
+
+    $revenue = (float) ($pdo->query(
+        "SELECT COALESCE(SUM(amount), 0) FROM payments"
     )->fetchColumn() ?? 0.0);
 
     return [
@@ -60,16 +64,15 @@ function get_dashboard_stats(): array
         'tests' => $testCompletion,
         'testsGrowth' => get_tests_growth(),
 
-        'revenue' => 0,
+        'revenue' => $revenue,
+        'revenueGrowth' => get_revenue_growth(),
 
         'rating' => $rating,
-        'ratingGrowth' => get_rating_value(),
+        'ratingGrowth' => get_rating_growth(),
     ];
 }
 
-// ============================================================
-//  WEEKLY SESSIONS CHART 
-// ============================================================
+// ─── Weekly Sessions Chart ────────────────────────────────────────────────────
 
 function get_weekly_sessions(): array
 {
@@ -110,9 +113,7 @@ function get_weekly_sessions(): array
     return ['labels' => $labels, 'data' => $data];
 }
 
-// ============================================================
-//  MONTHLY GROWTH CHART
-// ============================================================
+// ─── Monthly Growth Chart ─────────────────────────────────────────────────────
 
 function get_monthly_growth(): array
 {
@@ -177,58 +178,78 @@ function get_monthly_growth(): array
     ];
 }
 
-// ============================================================
-//  RECENT ACTIVITIES
-// ============================================================
+// ─── Recent Activities ────────────────────────────────────────────────────────
 
 function get_recent_activities(): array
 {
     $pdo = db();
 
     $sql = "
-        (
-            SELECT CONCAT('انضم مستخدم جديد: ', name) AS title, created_at
-            FROM users
-            WHERE role = 'CLIENT'
-        )
-        UNION ALL
-        (
-            SELECT CONCAT('تم إكمال جلسة مع ', u.name) AS title, s.start_time AS created_at
-            FROM sessions s
-            JOIN users u ON u.user_id = s.case_id
-        )
-        UNION ALL
-        (
-            SELECT CONCAT('انضم أخصائي جديد: ', name) AS title, created_at
-            FROM users
-            WHERE role = 'THERAPIST'
-        )
-        UNION ALL
-        (
-            SELECT 'أكمل مريض اختباراً نفسياً' AS title, created_at
-            FROM assessment_results
-        )
+        SELECT activity_type, client_name, activity_text, created_at
+        FROM (
+            SELECT
+                'ASSESSMENT' AS activity_type,
+                u.name AS client_name,
+                CONCAT(
+                    CASE WHEN c.gender = 'FEMALE' THEN 'أكملت' ELSE 'أكمل' END,
+                    ' ',
+                    u.name,
+                    ' اختبار ',
+                    a.title_ar
+                ) AS activity_text,
+                ar.created_at
+            FROM assessment_results ar
+            JOIN assessments a ON ar.assessment_id = a.assessment_id
+            JOIN clients c ON ar.client_id = c.client_id
+            JOIN users u ON u.user_id = c.client_id
+            WHERE ar.status = 'COMPLETED'
+
+            UNION ALL
+
+            SELECT
+                'GAME' AS activity_type,
+                u.name AS client_name,
+                CONCAT(
+                    CASE WHEN c.gender = 'FEMALE' THEN 'أكملت' ELSE 'أكمل' END,
+                    ' ',
+                    u.name,
+                    ' لعبة ',
+                    CASE gr.game_name
+                        WHEN 'Breathing' THEN 'التنفس'
+                        WHEN 'Difference' THEN 'لعبة الاختلافات'
+                        WHEN 'Misplacedpin' THEN 'الدبوس المفقود'
+                        WHEN 'Cards' THEN 'لعبة البطاقات'
+                        WHEN 'Crossword' THEN 'الكلمات المتقاطعة'
+                        WHEN 'Questions' THEN 'الأسئلة'
+                    END
+                ) AS activity_text,
+                gr.played_at AS created_at
+            FROM game_results gr
+            JOIN clients c ON gr.client_id = c.client_id
+            JOIN users u ON u.user_id = c.client_id
+            WHERE gr.is_completed = 1
+        ) activities
         ORDER BY created_at DESC
         LIMIT 5
     ";
 
     $rows = $pdo->query($sql)->fetchAll();
-
     $activities = [];
 
     foreach ($rows as $row) {
         $activities[] = [
-            'title' => $row['title'],
-            'time'  => time_ago_arabic($row['created_at']),
+            'activity_type' => $row['activity_type'],
+            'client_name'   => $row['client_name'],
+            'activity_text' => $row['activity_text'],
+            'created_at'    => $row['created_at'],
+            'time'          => time_ago_arabic($row['created_at']),
         ];
     }
 
     return $activities;
 }
 
-// ============================================================
-//  TOP SPECIALISTS
-// ============================================================
+// ─── Top Specialists ──────────────────────────────────────────────────────────
 
 function get_top_specialists(): array
 {
@@ -260,9 +281,7 @@ function get_top_specialists(): array
     return $specialists;
 }
 
-// ============================================================
-//  HELPER — Arabic relative time
-// ============================================================
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function time_ago_arabic(string $datetime): string
 {
@@ -278,6 +297,8 @@ function time_ago_arabic(string $datetime): string
     return 'منذ ' . (int) ($diff / 2592000) . ' أشهر';
 }
 
+// ─── Growth ───────────────────────────────────────────────────────────────────
+
 function get_active_users_growth(): float
 {
     $pdo = db();
@@ -286,20 +307,21 @@ function get_active_users_growth(): float
         SELECT COUNT(*) 
         FROM users 
         WHERE role = 'CLIENT'
-          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+          AND is_active = 1
+          AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+          AND created_at < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
     ")->fetchColumn();
 
     $previous = (int) $pdo->query("
         SELECT COUNT(*) 
         FROM users 
         WHERE role = 'CLIENT'
-          AND created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY)
-          AND DATE_SUB(NOW(), INTERVAL 30 DAY)
+          AND is_active = 1
+          AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+          AND created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
     ")->fetchColumn();
 
-    return $previous > 0
-        ? round((($current - $previous) / $previous) * 100, 1)
-        : 0;
+    return calculate_monthly_percentage_change($current, $previous);
 }
 
 function get_therapists_growth(): float
@@ -310,20 +332,21 @@ function get_therapists_growth(): float
         SELECT COUNT(*) 
         FROM users 
         WHERE role = 'THERAPIST'
-          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+          AND is_active = 1
+          AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+          AND created_at < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
     ")->fetchColumn();
 
     $previous = (int) $pdo->query("
         SELECT COUNT(*) 
         FROM users 
         WHERE role = 'THERAPIST'
-          AND created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY)
-          AND DATE_SUB(NOW(), INTERVAL 30 DAY)
+          AND is_active = 1
+          AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+          AND created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
     ")->fetchColumn();
 
-    return $previous > 0
-        ? round((($current - $previous) / $previous) * 100, 1)
-        : 0;
+    return calculate_monthly_percentage_change($current, $previous);
 }
 
 function get_sessions_growth(): float
@@ -332,52 +355,115 @@ function get_sessions_growth(): float
 
     $current = (int) $pdo->query("
         SELECT COUNT(*) 
-        FROM sessions 
-        WHERE start_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        FROM appointments 
+        WHERE status = 'COMPLETED'
+          AND date_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+          AND date_time < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
     ")->fetchColumn();
 
     $previous = (int) $pdo->query("
         SELECT COUNT(*) 
-        FROM sessions 
-        WHERE start_time BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY)
-        AND DATE_SUB(NOW(), INTERVAL 30 DAY)
+        FROM appointments 
+        WHERE status = 'COMPLETED'
+          AND date_time >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+          AND date_time < DATE_FORMAT(CURDATE(), '%Y-%m-01')
     ")->fetchColumn();
 
-    return $previous > 0
-        ? round((($current - $previous) / $previous) * 100, 1)
-        : 0;
+    return calculate_monthly_percentage_change($current, $previous);
 }
 
 function get_tests_growth(): float
 {
     $pdo = db();
 
-    $current = (int) $pdo->query("
-        SELECT COUNT(*) 
-        FROM assessment_results 
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    ")->fetchColumn();
+    $current = get_test_completion_rate_for_range(
+        "created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+         AND created_at < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)"
+    );
 
-    $previous = (int) $pdo->query("
-        SELECT COUNT(*) 
-        FROM assessment_results 
-        WHERE created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY)
-        AND DATE_SUB(NOW(), INTERVAL 30 DAY)
-    ")->fetchColumn();
+    $previous = get_test_completion_rate_for_range(
+        "created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+         AND created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')"
+    );
 
-    return $previous > 0
-        ? round((($current - $previous) / $previous) * 100, 1)
-        : 0;
+    return calculate_monthly_percentage_change($current, $previous);
 }
 
-function get_rating_value(): float
+function get_revenue_growth(): float
 {
     $pdo = db();
 
-    $rating = (float) $pdo->query("
-        SELECT AVG(rating)
-        FROM therapists
+    $current = (float) $pdo->query("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM payments
+        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+          AND created_at < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
     ")->fetchColumn();
 
-    return round($rating, 1);
+    $previous = (float) $pdo->query("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM payments
+        WHERE created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+          AND created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+    ")->fetchColumn();
+
+    return calculate_monthly_percentage_change($current, $previous);
+}
+
+function get_rating_growth(): float
+{
+    $pdo = db();
+
+    $current = (float) ($pdo->query("
+        SELECT COALESCE(AVG(t.rating), 0)
+        FROM therapists t
+        JOIN users u ON u.user_id = t.therapist_id
+        WHERE t.rating > 0
+          AND u.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+          AND u.created_at < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+    ")->fetchColumn() ?? 0.0);
+
+    $previous = (float) ($pdo->query("
+        SELECT COALESCE(AVG(t.rating), 0)
+        FROM therapists t
+        JOIN users u ON u.user_id = t.therapist_id
+        WHERE t.rating > 0
+          AND u.created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)
+          AND u.created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+    ")->fetchColumn() ?? 0.0);
+
+    return calculate_monthly_percentage_change($current, $previous);
+}
+
+function get_test_completion_rate_for_range(string $whereClause): float
+{
+    $pdo = db();
+
+    $total = (int) $pdo->query("
+        SELECT COUNT(*)
+        FROM assessment_results
+        WHERE $whereClause
+    ")->fetchColumn();
+
+    if ($total <= 0) {
+        return 0.0;
+    }
+
+    $canceled = (int) $pdo->query("
+        SELECT COUNT(*)
+        FROM assessment_results
+        WHERE $whereClause
+          AND UPPER(status) IN ('PENDING', 'FAILED', 'CANCELED')
+    ")->fetchColumn();
+
+    return round((($total - $canceled) * 100) / $total, 1);
+}
+
+function calculate_monthly_percentage_change(float $current, float $previous): float
+{
+    if ($previous == 0.0) {
+        return $current > 0.0 ? 100.0 : 0.0;
+    }
+
+    return round((($current - $previous) / $previous) * 100, 1);
 }

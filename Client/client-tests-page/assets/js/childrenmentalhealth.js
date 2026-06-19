@@ -22,6 +22,8 @@ const questions = [
 
 let currentQuestion = 0;
 let totalScore = 0;
+let answers = [];
+const answerLabels = {2: 'دائمًا', 1: 'أحيانًا', 0: 'نادرًا'};
 
 const container = document.getElementById("questionContainer");
 const progress = document.getElementById("progressBar");
@@ -49,6 +51,7 @@ progress.style.width = ((currentQuestion+1)/questions.length)*100 + "%";
 
 function nextQ(val){
 
+answers.push({q: currentQuestion + 1, value: val, label: answerLabels[val] || ''});
 totalScore += val;
 currentQuestion++;
 
@@ -94,5 +97,10 @@ container.innerHTML = `
 
 </div>
 `;
+
+// Save to database
+var rawResult = {result: level};
+saveResult(window.ASSESSMENT_ID, answers, totalScore, rawResult);
+
 }
 showQuestion();

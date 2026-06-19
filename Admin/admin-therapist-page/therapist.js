@@ -16,7 +16,6 @@ let therapistsData = (window.THERAPISTS_DATA || []).map((t) => ({
 let filteredData = [...therapistsData];
 let currentPage = 1;
 let editingId = null;
-let activeDropdownRow  = null;
 let deletingId = null;
 
 // Helpers
@@ -70,7 +69,7 @@ function closeViewModal() {
 }
 window.closeViewModal = closeViewModal;
 
-// Delete – shows confirm modal, then POSTs to PHP
+// Delete 
 function handleDelete(id) {
   deletingId = id;
   document.getElementById("confirmModal").classList.add("open");
@@ -87,16 +86,10 @@ function doDeleteTherapist(id) {
       if (data.success) {
         window.location.reload();
       } else {
-        alert("حدث خطأ أثناء الحذف. حاول مجدداً.");
+        showErrorAlert("حدث خطأ أثناء الحذف. حاول مجدداً.");
       }
     })
-    .catch(() => alert("تعذّر الاتصال بالخادم."));
-}
-
-// Dropdown
-function closeDropdown() {
-  document.getElementById("dropdownMenu").classList.remove("open");
-  activeDropdownRow = null;
+    .catch(() => showErrorAlert("تعذّر الاتصال بالخادم."));
 }
 
 // Render table rows
@@ -138,14 +131,14 @@ function renderTable() {
         <td><span class="status-badge ${getStatusClass(t.status)}">${getStatusLabel(t.status)}</span></td>
         <td>
           <div class="actions-cell">
-            <button class="action-btn more-btn" data-action="more" data-id="${t.id}" title="المزيد">
-              <i class="fa fa-ellipsis-v"></i>
+            <button class="action-btn" data-action="view" data-id="${t.id}" title="عرض">
+              <i class="fa fa-eye"></i>
             </button>
             <button class="action-btn" data-action="edit" data-id="${t.id}" title="تعديل">
               <i class="fa fa-edit"></i>
             </button>
-            <button class="action-btn" data-action="view" data-id="${t.id}" title="عرض">
-              <i class="fa fa-eye"></i>
+            <button class="action-btn action-btn-delete" data-action="delete" data-id="${t.id}" title="حذف">
+              <i class="fa fa-trash"></i>
             </button>
           </div>
         </td>
@@ -253,7 +246,7 @@ function renderAll() {
   updatePaginationInfo();
 }
 
-// Search / filter (client-side, no server round-trip)
+// Search / filter
 function applyFilters() {
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   filteredData = therapistsData.filter(
@@ -331,7 +324,7 @@ function closeModal() {
   editingId = null;
 }
 
-// Save – validate then POST to PHP, reload on success
+// Save 
 function saveTherapist() {
   clearValidation();
 
@@ -378,12 +371,12 @@ function saveTherapist() {
         window.location.reload();
       } else {
         saveBtn.disabled = false;
-        alert("حدث خطأ أثناء الحفظ. حاول مجدداً.");
+        showErrorAlert("حدث خطأ أثناء الحفظ. حاول مجدداً.");
       }
     })
     .catch(() => {
       saveBtn.disabled = false;
-      alert("تعذّر الاتصال بالخادم.");
+      showErrorAlert("تعذّر الاتصال بالخادم.");
     });
 }
 
@@ -405,7 +398,7 @@ document.getElementById("nextBtn").addEventListener("click", () => {
 
 document.getElementById("searchInput").addEventListener("input", applyFilters);
 
-// Table row actions (desktop)
+// Table row actions
 document.getElementById("therapistsTableBody").addEventListener("click", (e) => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
@@ -416,13 +409,8 @@ document.getElementById("therapistsTableBody").addEventListener("click", (e) => 
     openViewModal(id);
   } else if (action === "edit") {
     openModal("edit", id);
-  } else if (action === "more") {
-    const dropdown = document.getElementById("dropdownMenu");
-    const rect     = btn.getBoundingClientRect();
-    dropdown.style.top  = rect.bottom + window.scrollY + 4 + "px";
-    dropdown.style.left = rect.left + window.scrollX - 120 + "px";
-    dropdown.classList.add("open");
-    activeDropdownRow = id;
+  } else if (action === "delete") {
+    handleDelete(id);
   }
 });
 
@@ -435,27 +423,6 @@ document.getElementById("mobileCards").addEventListener("click", (e) => {
   if (action === "view")   openViewModal(id);
   if (action === "edit")   openModal("edit", id);
   if (action === "delete") handleDelete(id);
-});
-
-// Dropdown menu actions
-document.getElementById("dropdownView").addEventListener("click", () => {
-  if (activeDropdownRow !== null) openViewModal(activeDropdownRow);
-  closeDropdown();
-});
-document.getElementById("dropdownEdit").addEventListener("click", () => {
-  if (activeDropdownRow !== null) openModal("edit", activeDropdownRow);
-  closeDropdown();
-});
-document.getElementById("dropdownDelete").addEventListener("click", () => {
-  if (activeDropdownRow !== null) handleDelete(activeDropdownRow);
-  closeDropdown();
-});
-
-// Close dropdown when clicking anywhere else
-document.addEventListener("click", (e) => {
-  if (!e.target.closest("[data-action='more']") && !e.target.closest("#dropdownMenu")) {
-    closeDropdown();
-  }
 });
 
 // Confirm delete
@@ -496,8 +463,6 @@ if (menuBtn && sidebar && sidebarOverlay) {
 }
 
 // Logout
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) logoutBtn.addEventListener("click", () => { window.location.href = "../index.php"; });
 
 // Init
 applyFilters();

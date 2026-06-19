@@ -5,121 +5,70 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/client.php';
 require_once __DIR__ . '/../../Database/profile-database.php';
-require_once __DIR__ . '/../../Database/avatar-storage.php';
+require_once __DIR__ . '/profile-database.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
 
-// ── Handle POST requests (AJAX JSON or traditional form) ───────
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
-    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    $isJson = stripos($contentType, 'application/json') !== false;
-
-    if ($isJson) {
-        $input = json_decode(file_get_contents('php://input'), true) ?? [];
-    } else {
-        $input = $_POST;
-    }
-
-    $action    = trim((string) ($input['action'] ?? ''));
-    $csrfToken = trim((string) ($input['csrf_token'] ?? ''));
-
-    $response = ['success' => false, 'message' => 'إجراء غير معروف.'];
-
-    if (!verify_csrf($csrfToken)) {
-        $response = [
-            'success' => false,
-            'message' => 'انتهت صلاحية الطلب. يرجى تحديث الصفحة والمحاولة مجدداً.',
-        ];
-    } elseif ($action === 'update_profile') {
-        $response = client_update_profile_personal_info(
-            (string) ($input['name'] ?? ''),
-            (string) ($input['email'] ?? ''),
-            (string) ($input['phone'] ?? ''),
-            (string) ($input['birthdate'] ?? '')
-        );
-        // Keep session cache in sync on success
-        if ($response['success']) {
-            $_SESSION['auth']['name']  = trim((string) ($input['name'] ?? ''));
-            $_SESSION['auth']['email'] = trim((string) ($input['email'] ?? ''));
-        }
-    } elseif ($action === 'change_password') {
-        $response = client_change_password(
-            (string) ($input['current_password'] ?? ''),
-            (string) ($input['new_password'] ?? '')
-        );
-    } elseif ($action === 'delete_account') {
-        $deleted = client_delete_account_hard();
-        if ($deleted) {
-            $response = [
-                'success'  => true,
-                'message'  => 'تم حذف الحساب بنجاح.',
-                'redirect' => '/That-Copy/Auth/login/index.php',
-            ];
-        } else {
-            $response = [
-                'success' => false,
-                'message' => 'تعذر حذف الحساب حالياً. يرجى المحاولة لاحقاً.',
-            ];
-        }
-    }
-
-    // AJAX → return JSON and stop
-    if ($isJson) {
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($response, JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && ($_GET['action'] ?? '') === 'ready_avatars') {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(client_profile_list_ready_avatars(), JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// ── Load page data ─────────────────────────────────────────────
-$personalInfo      = ['name' => '', 'email' => '', 'phone' => '', 'birthdate' => '', 'avatar' => null];
-$sessionStats        = ['total' => 0, 'scheduled' => 0, 'completed' => 0];
-$firstAppointment    = ['date' => null, 'therapist_name' => null];
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(client_profile_handle_post(), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$personalInfo = ['name' => '', 'email' => '', 'phone' => '', 'birthdate' => '', 'avatar' => null, 'gender' => 'MALE', 'avatar_url' => ''];
+$sessionStats = ['total' => 0, 'scheduled' => 0, 'completed' => 0];
+$firstAppointment = ['date' => null, 'therapist_name' => null];
+$notificationPreferences = client_default_notification_preferences();
 $showNotificationDot = false;
 
 try {
     $personalInfo = client_get_profile_personal_info();
 } catch (Throwable $e) {
-    // defaults
 }
 
 try {
     $sessionStats = client_get_session_stats();
 } catch (Throwable $e) {
-    // defaults
 }
 
 try {
     $firstAppointment = client_get_first_appointment_info();
 } catch (Throwable $e) {
-    // defaults
 }
 
 try {
-    $showNotificationDot = client_has_unread_notifications_for_current_user();
+    $notificationPreferences = client_get_notification_preferences_for_current_user();
+} catch (Throwable $e) {
+}
+
+try {
+    $showNotificationDot = hasUnreadNotifications();
 } catch (Throwable $e) {
     $showNotificationDot = false;
 }
 
-// Format the first appointment date for display
 $treatmentStartDate = null;
 if ($firstAppointment['date'] !== null && $firstAppointment['date'] !== '') {
     try {
         $dt = new DateTimeImmutable($firstAppointment['date']);
         $treatmentStartDate = $dt->format('Y/m/d');
     } catch (Throwable $e) {
-        // keep null
     }
 }
 $therapistName = $firstAppointment['therapist_name'];
 
 $csrfToken = csrf_token();
-$config = require __DIR__ . '/../../Database/config.php';
-$avatarUploadEndpoint = rtrim((string) $config['app_url'], '/') . '/Auth/handlers/upload-avatar.php';
-
-$hasClientAvatar = isset($personalInfo['avatar']) && $personalInfo['avatar'] !== null && trim((string) $personalInfo['avatar']) !== '';
-$clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalInfo['avatar'])) : '';
+$hasClientAvatar = ($personalInfo['avatar_url'] ?? '') !== '';
+$clientAvatarUrl = (string) ($personalInfo['avatar_url'] ?? '');
+$genderLabel = client_profile_gender_label(client_profile_gender_folder((string) ($personalInfo['gender'] ?? 'MALE')));
 ?>
 
 <!doctype html>
@@ -129,7 +78,6 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="<?= e($csrfToken) ?>" />
-  <meta name="avatar-upload-endpoint" content="<?= e($avatarUploadEndpoint) ?>" />
   <title>الملف الشخصي</title>
   <link rel="stylesheet" href="../client-dashboard-page/style.css" />
   <link rel="stylesheet" href="./profile.css" />
@@ -183,7 +131,7 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
             <div class="avatar-circle-lg">
               <span class="avatar-initial" id="heroInitial"<?= $hasClientAvatar ? ' style="visibility:hidden"' : '' ?>><?= e(mb_substr($personalInfo['name'], 0, 1)) ?></span>
               <img id="avatarImage" alt="" src="<?= e($clientAvatarUrl) ?>" style="display: <?= $hasClientAvatar ? 'block' : 'none' ?>;" />
-              <button type="button" class="avatar-change-btn">
+              <button type="button" class="avatar-change-btn" id="avatarChangeBtn" aria-label="تغيير الصورة">
                 <i class="fa-solid fa-camera"></i>
               </button>
             </div>
@@ -227,9 +175,7 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
       <div class="card">
         <div class="card-header">
           <h3>المعلومات الشخصية</h3>
-          <button class="edit-btn" id="editBtn">
-            تعديل
-          </button>
+          <button class="edit-btn" id="editBtn">تعديل</button>
         </div>
         <div class="info">
           <span>
@@ -246,7 +192,7 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
         <div class="info">
           <span>
             <img src="../images/Container15.png" class="small-icon" alt="phone" />
-            <span id="displayPhone"><?= e($personalInfo['phone'] ?: 'غير متاح') ?></span>
+            <span id="displayPhone" dir="<?= $personalInfo['phone'] ? 'ltr' : 'rtl' ?>"><?= e($personalInfo['phone'] ?: 'غير متاح') ?></span>
           </span>
         </div>
         <div class="info">
@@ -257,14 +203,10 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
         </div>
 
         <div id="editForm" style="display: none; margin-top: 20px">
-          <input type="text" id="nameInput" placeholder="الاسم"
-                 value="<?= e($personalInfo['name']) ?>" />
-          <input type="email" id="emailInput" placeholder="البريد الإلكتروني"
-                 value="<?= e($personalInfo['email']) ?>" />
-          <input type="text" id="phoneInput" placeholder="رقم الهاتف"
-                 value="<?= e($personalInfo['phone']) ?>" />
-          <input type="date" id="birthInput"
-                 value="<?= e($personalInfo['birthdate']) ?>" />
+          <input type="text" id="nameInput" placeholder="الاسم" value="<?= e($personalInfo['name']) ?>" />
+          <input type="email" id="emailInput" placeholder="البريد الإلكتروني" value="<?= e($personalInfo['email']) ?>" />
+          <input type="text" id="phoneInput" placeholder="رقم الهاتف" value="<?= e($personalInfo['phone']) ?>" />
+          <input type="date" id="birthInput" value="<?= e($personalInfo['birthdate']) ?>" />
           <button class="save-btn" id="saveProfileBtn">حفظ</button>
         </div>
       </div>
@@ -276,29 +218,22 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
         <input type="password" id="oldPassword" placeholder="كلمة المرور الحالية" />
         <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة" />
         <input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور الجديدة" />
-        <button class="save-btn" id="changePasswordBtn">
-          حفظ التغيير
-        </button>
+        <button class="save-btn" id="changePasswordBtn">حفظ التغيير</button>
       </div>
     </div>
 
     <div class="card settings">
       <h3 class="card-header">إعدادات الإشعارات</h3>
       <div class="setting">
-        <span>إشعارات المواعيد</span><label class="switch"><input type="checkbox"
-            id="notifyAppointments" /><span></span></label>
+        <span>إشعارات المواعيد</span><label class="switch"><input type="checkbox" id="notifyAppointments"<?= $notificationPreferences['appointment_notifications'] ? ' checked' : '' ?> /><span></span></label>
       </div>
       <div class="setting">
-        <span>إشعارات الرسائل</span><label class="switch"><input type="checkbox"
-            id="notifyMessages" /><span></span></label>
+        <span>إشعارات الرسائل</span><label class="switch"><input type="checkbox" id="notifyMessages"<?= $notificationPreferences['message_notifications'] ? ' checked' : '' ?> /><span></span></label>
       </div>
       <div class="setting">
-        <span>تذكير بالأنشطة</span><label class="switch"><input type="checkbox"
-            id="notifyActivities" /><span></span></label>
+        <span>تذكير بالأنشطة</span><label class="switch"><input type="checkbox" id="notifyActivities"<?= $notificationPreferences['activity_reminder_notifications'] ? ' checked' : '' ?> /><span></span></label>
       </div>
-      <button class="save-btn" onclick="saveNotifications()">
-        حفظ الإعدادات
-      </button>
+      <button class="save-btn" id="saveNotificationsBtn">حفظ الإعدادات</button>
     </div>
 
     <div class="danger">
@@ -308,8 +243,33 @@ $clientAvatarUrl = $hasClientAvatar ? avatar_public_url(trim((string) $personalI
     </div>
   </section>
 
+  <div class="avatar-modal" id="avatarModal" hidden>
+    <div class="avatar-modal-backdrop" id="avatarModalBackdrop"></div>
+    <div class="avatar-modal-dialog" role="dialog" aria-labelledby="avatarModalTitle" aria-modal="true">
+      <div class="avatar-modal-header">
+        <h3 id="avatarModalTitle">تغيير الصورة الشخصية</h3>
+        <button type="button" class="avatar-modal-close" id="avatarModalClose" aria-label="إغلاق">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="avatar-modal-subtitle">صور جاهزة لـ <?= e($genderLabel) ?> — أو ارفع صورة من جهازك</p>
+
+      <div class="avatar-modal-upload">
+        <button type="button" class="save-btn" id="uploadFromDeviceBtn">
+          <i class="fa-solid fa-upload"></i>
+          رفع من الجهاز
+        </button>
+      </div>
+
+      <div class="avatar-modal-section-title">اختر صورة جاهزة</div>
+      <div class="ready-avatars-grid" id="readyAvatarsGrid">
+        <p class="ready-avatars-empty">جاري التحميل...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay"></div>
   <footer>© 2026 ذات للإستشارات النفسية جميع الحقوق محفوظة</footer>
-   <div class="sidebar-overlay"></div>
   <script src="./profile.js"></script>
 </body>
 

@@ -114,9 +114,18 @@ $paginationInfo = 'عرض ' . $shownCount . ' من ' . $totalFound . ' حالة'
             'CLOSED'       => ['label' => 'مغلقة', 'cls' => 'pending', 'icon' => '../images/Calendar.svg']
           ];
           $st = $statusMap[$c['status']] ?? $statusMap['IN_PROGRESS'];
+
+          $progressVal = (int) $c['progress'];
+          if ($progressVal <= 30) {
+            $progressColor = 'progress-low';
+          } elseif ($progressVal <= 80) {
+            $progressColor = 'progress-mid';
+          } else {
+            $progressColor = 'progress-high';
+          }
         ?>
           <div class="case-card">
-            <div class="avatar"><?= $initial ?></div>
+            <div class="avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></div>
             <div class="case-info">
               <span class="case-name"><?= htmlspecialchars($c['client_name']) ?></span>
               <span class="case-condition">رقم الحالة: #<?= $c['case_id'] ?></span>
@@ -129,17 +138,17 @@ $paginationInfo = 'عرض ' . $shownCount . ' من ' . $totalFound . ' حالة'
             <div class="case-progress-col">
               <div class="progress-top">
                 <span class="progress-label">التقدم</span>
-                <span class="progress-pct"><?= $c['progress'] ?>%</span>
+                <span class="progress-pct <?= $progressColor ?>"><?= $c['progress'] ?>%</span>
               </div>
               <div class="progress-bar-wrap">
-                <div class="progress-bar-fill" style="width:<?= $c['progress'] ?>%;"></div>
+                <div class="progress-bar-fill <?= $progressColor ?>" style="width:<?= $c['progress'] ?>%;"></div>
               </div>
               <div class="progress-sessions"><?= $c['sessions_count'] ?> جلسة</div>
             </div>
             <div class="badge <?= $st['cls'] ?>">
               <img src="<?= $st['icon'] ?>"> <?= $st['label'] ?>
             </div>
-            <button class="btn-details" onclick='viewDetails(<?= json_encode($c) ?>, "<?= $formattedDate ?>")'>عرض التفاصيل</button>
+            <button class="btn-details" onclick='viewDetails(<?= json_encode($c, JSON_HEX_APOS | JSON_UNESCAPED_UNICODE) ?>, "<?= htmlspecialchars($formattedDate, ENT_QUOTES, 'UTF-8') ?>")'>عرض التفاصيل</button>
           </div>
         <?php endforeach; ?>
       </div>
@@ -198,42 +207,6 @@ $paginationInfo = 'عرض ' . $shownCount . ' من ' . $totalFound . ' حالة'
   </div>
 
   <script src="./cases.js"></script>
-  <script>
-    function viewDetails(data, dateStr) {
-      document.getElementById("modal-avatar").textContent = data.client_name.charAt(0);
-      document.getElementById("modal-name").textContent = data.client_name;
-      document.getElementById("modal-condition").textContent = "رقم الحالة: #" + data.case_id;
-      document.getElementById("modal-doctor").textContent = data.therapist_name;
-      document.getElementById("modal-date").textContent = dateStr;
-      document.getElementById("modal-sessions").textContent = data.sessions_count + " جلسة";
-      document.getElementById("modal-progress-pct").textContent = data.progress + "%";
-      document.getElementById("modal-progress-fill").style.width = data.progress + "%";
-
-      const badge = document.getElementById("modal-badge");
-      const map = {
-        'IN_PROGRESS': 'جارية',
-        'UNDER_REVIEW': 'تحت المراجعة',
-        'CLOSED': 'مغلقة'
-      };
-      const clsMap = {
-        'IN_PROGRESS': 'active',
-        'UNDER_REVIEW': 'review',
-        'CLOSED': 'pending'
-      };
-
-      badge.textContent = map[data.status];
-      badge.className = "badge " + (clsMap[data.status] || "active");
-
-      document.getElementById("case-modal").classList.add("open");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeModal() {
-      document.getElementById("case-modal").classList.remove("open");
-      document.body.style.overflow = "";
-    }
-    document.getElementById("modal-overlay").onclick = closeModal;
-  </script>
 </body>
 
 </html>

@@ -7,14 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (menuBtn && sidebar && overlay) {
         // Open sidebar on mobile
         menuBtn.addEventListener("click", () => {
-            sidebar.classList.add("active");
-            overlay.classList.add("active");
+            sidebar.classList.toggle("open");
+            overlay.classList.toggle("open");
         });
 
-        // Close sidebar when clicking the overlay
         overlay.addEventListener("click", () => {
-            sidebar.classList.remove("active");
-            overlay.classList.remove("active");
+            sidebar.classList.remove("open");
+            overlay.classList.remove("open");
         });
     }
 
@@ -30,67 +29,61 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", function () {
-            if (confirm("Are you sure you want to log out?")) {
-                window.location.href = "../login-page/login.php"; 
-            }
-        });
+    const modalOverlay = document.getElementById("modal-overlay");
+    if (modalOverlay) {
+        modalOverlay.onclick = closeModal;
     }
 });
 
-/**
- * Function to open the details modal
- * Triggered by the "View Details" button in cases.php
- * @param {Object} data - The case data object
- * @param {string} dateStr - The formatted date/time string from PHP
- */
+function getProgressColorClass(pct) {
+    if (pct <= 30) return "progress-low";
+    if (pct <= 80) return "progress-mid";
+    return "progress-high";
+}
+
 function viewDetails(data, dateStr) {
     const modal = document.getElementById("case-modal");
     if (!modal) return;
 
-    // Fill basic client information
     document.getElementById("modal-avatar").textContent = data.client_name.charAt(0);
     document.getElementById("modal-name").textContent = data.client_name;
-    document.getElementById("modal-condition").textContent = "Case ID: #" + data.case_id;
+    document.getElementById("modal-condition").textContent = "رقم الحالة: #" + data.case_id;
     document.getElementById("modal-doctor").textContent = data.therapist_name;
-    document.getElementById("modal-date").textContent = dateStr || "No sessions yet";
-    document.getElementById("modal-sessions").textContent = (data.sessions_count || 0) + " sessions";
-    
-    // Progress bar and percentage
-    const progressPct = data.progress || 0;
-    document.getElementById("modal-progress-pct").textContent = progressPct + "%";
-    document.getElementById("modal-progress-fill").style.width = progressPct + "%";
+    document.getElementById("modal-date").textContent = dateStr;
+    document.getElementById("modal-sessions").textContent = data.sessions_count + " جلسة";
 
-    // Status Badge mapping
+    const progressPct = Number(data.progress) || 0;
+    const progressColor = getProgressColorClass(progressPct);
+    const progressPctEl = document.getElementById("modal-progress-pct");
+    const progressFillEl = document.getElementById("modal-progress-fill");
+    progressPctEl.textContent = progressPct + "%";
+    progressPctEl.className = "modal-progress-pct " + progressColor;
+    progressFillEl.style.width = progressPct + "%";
+    progressFillEl.className = "modal-bar-fill " + progressColor;
+
     const badge = document.getElementById("modal-badge");
-    const statusTextMap = { 
-        'IN_PROGRESS': 'Active', 
-        'UNDER_REVIEW': 'Under Review', 
-        'CLOSED': 'Closed' 
+    const map = {
+        IN_PROGRESS: "جارية",
+        UNDER_REVIEW: "تحت المراجعة",
+        CLOSED: "مغلقة",
     };
-    const statusClassMap = { 
-        'IN_PROGRESS': 'active', 
-        'UNDER_REVIEW': 'review', 
-        'CLOSED': 'pending' 
+    const clsMap = {
+        IN_PROGRESS: "active",
+        UNDER_REVIEW: "review",
+        CLOSED: "pending",
     };
-    
-    badge.textContent = statusTextMap[data.status] || 'Unknown';
-    badge.className = "badge " + (statusClassMap[data.status] || "active");
 
-    // Display the modal and lock background scrolling
+    badge.textContent = map[data.status];
+    badge.className = "badge " + (clsMap[data.status] || "active");
+
     modal.classList.add("open");
-    document.body.style.overflow = "hidden"; 
+    document.body.style.overflow = "hidden";
 }
-
-
-// Function to close the details modal
 
 function closeModal() {
     const modal = document.getElementById("case-modal");
     if (modal) {
         modal.classList.remove("open");
-        document.body.style.overflow = ""; // Restore scrolling
+        document.body.style.overflow = "";
     }
 }

@@ -1,11 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ── CSRF token (from <meta name="csrf-token">) ──────────────
   const csrfMeta = document.querySelector('meta[name="csrf-token"]');
   const csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
-  const avatarEndpointMeta = document.querySelector('meta[name="avatar-upload-endpoint"]');
-  const avatarUploadEndpoint = avatarEndpointMeta ? avatarEndpointMeta.getAttribute("content") : "";
 
-  // ── Helper: send JSON POST to current page ──────────────────
   async function postAction(payload) {
     try {
       const res = await fetch(window.location.href, {
@@ -22,7 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ── Toast notification ──────────────────────────────────────
+  async function postFormData(formData) {
+    try {
+      const res = await fetch(window.location.href, {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
+      return await res.json();
+    } catch {
+      return { success: false, message: "حدث خطأ في الاتصال بالخادم." };
+    }
+  }
+
   function showToast(text, isError = false) {
     let toast = document.getElementById("toast");
 
@@ -56,7 +64,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   }
 
-  // ── Edit profile: show form ─────────────────────────────────
+  function applyAvatarUrl(url) {
+    const img = document.getElementById("avatarImage");
+    const initial = document.getElementById("heroInitial");
+
+    if (img && url) {
+      img.src = url;
+      img.style.display = "block";
+    }
+    if (initial) {
+      initial.style.visibility = "hidden";
+    }
+  }
+
   const editBtn = document.getElementById("editBtn");
   const editForm = document.getElementById("editForm");
 
@@ -66,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ── Save profile: POST update_profile ───────────────────────
   const saveProfileBtn = document.getElementById("saveProfileBtn");
 
   if (saveProfileBtn) {
@@ -96,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
       saveProfileBtn.textContent = "حفظ";
 
       if (result.success) {
-        // Update display values in the DOM
         const displayName = document.getElementById("displayName");
         const displayEmail = document.getElementById("displayEmail");
         const displayPhone = document.getElementById("displayPhone");
@@ -106,7 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (displayName) displayName.textContent = name;
         if (displayEmail) displayEmail.textContent = email;
-        if (displayPhone) displayPhone.textContent = phone || "غير متاح";
+        if (displayPhone) {
+          displayPhone.textContent = phone || "غير متاح";
+          displayPhone.dir = phone ? "ltr" : "rtl";
+        }
         if (displayBirth) displayBirth.textContent = birthdate || "غير متاح حالياً";
         if (heroName) heroName.textContent = name;
         if (heroInitial) heroInitial.textContent = name.charAt(0) || "";
@@ -119,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ── Change password: POST change_password ───────────────────
   const changePasswordBtn = document.getElementById("changePasswordBtn");
 
   if (changePasswordBtn) {
@@ -164,12 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ── Delete account: POST delete_account ─────────────────────
   const deleteAccountBtn = document.getElementById("deleteAccountBtn");
 
   if (deleteAccountBtn) {
     deleteAccountBtn.addEventListener("click", async () => {
-      if (!confirm("هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.")) {
+      if (!(await showConfirm("هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.", { icon: "warning", confirmText: "نعم، احذف" }))) {
         return;
       }
 
@@ -191,74 +210,176 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ── Avatar upload → storage + users.avatar ──────────────────
-  const avatarBtn = document.querySelector(".avatar-change-btn");
+  const avatarModal = document.getElementById("avatarModal");
+  const avatarModalBackdrop = document.getElementById("avatarModalBackdrop");
+  const avatarModalClose = document.getElementById("avatarModalClose");
+  const avatarChangeBtn = document.getElementById("avatarChangeBtn");
+  const uploadFromDeviceBtn = document.getElementById("uploadFromDeviceBtn");
   const avatarInput = document.getElementById("avatarInput");
+  const readyAvatarsGrid = document.getElementById("readyAvatarsGrid");
 
-  if (avatarBtn && avatarInput) {
-    avatarBtn.addEventListener("click", () => avatarInput.click());
+  function openAvatarModal() {
+    if (!avatarModal) return;
+    avatarModal.hidden = false;
+    document.body.style.overflow = "hidden";
+    loadReadyAvatars();
+  }
 
-    avatarInput.addEventListener("change", async (e) => {
+  function closeAvatarModal() {
+    if (!avatarModal) return;
+    avatarModal.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  async function loadReadyAvatars() {
+    if (!readyAvatarsGrid) return;
+
+    readyAvatarsGrid.innerHTML = '<p class="ready-avatars-empty">جاري التحميل...</p>';
+
+    try {
+      const res = await fetch(window.location.pathname + "?action=ready_avatars", {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        cache: "no-store",
+      });
+      const data = await res.json();
+
+      if (!data.success || !Array.isArray(data.avatars) || data.avatars.length === 0) {
+        readyAvatarsGrid.innerHTML =
+          '<p class="ready-avatars-empty">لا توجد صور جاهزة حالياً. يمكنك الرفع من جهازك.</p>';
+        return;
+      }
+
+      readyAvatarsGrid.innerHTML = "";
+
+      data.avatars.forEach(function (item) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "ready-avatar-item";
+        button.title = item.label || "";
+        const img = document.createElement("img");
+        img.src = item.url;
+        img.alt = item.label || "";
+        button.appendChild(img);
+
+        button.addEventListener("click", async function () {
+          readyAvatarsGrid.querySelectorAll(".ready-avatar-item").forEach(function (el) {
+            el.classList.remove("is-selected");
+          });
+          button.classList.add("is-selected");
+          button.disabled = true;
+
+          const result = await postAction({
+            action: "select_ready_avatar",
+            avatar_key: item.key,
+          });
+
+          button.disabled = false;
+
+          if (result.success && result.avatar_url) {
+            applyAvatarUrl(result.avatar_url);
+            closeAvatarModal();
+            showToast(result.message || "تم تحديث الصورة");
+          } else {
+            button.classList.remove("is-selected");
+            showToast(result.message || "تعذر اختيار الصورة", true);
+          }
+        });
+
+        readyAvatarsGrid.appendChild(button);
+      });
+    } catch {
+      readyAvatarsGrid.innerHTML =
+        '<p class="ready-avatars-empty">تعذر تحميل الصور الجاهزة.</p>';
+    }
+  }
+
+  if (avatarChangeBtn) {
+    avatarChangeBtn.addEventListener("click", openAvatarModal);
+  }
+
+  if (avatarModalClose) {
+    avatarModalClose.addEventListener("click", closeAvatarModal);
+  }
+
+  if (avatarModalBackdrop) {
+    avatarModalBackdrop.addEventListener("click", closeAvatarModal);
+  }
+
+  if (uploadFromDeviceBtn && avatarInput) {
+    uploadFromDeviceBtn.addEventListener("click", () => avatarInput.click());
+  }
+
+  if (avatarInput) {
+    avatarInput.addEventListener("change", async function (e) {
       const file = e.target.files && e.target.files[0];
       avatarInput.value = "";
       if (!file) return;
 
-      if (!avatarUploadEndpoint) {
-        showToast("رابط رفع الصورة غير مهيأ.", true);
-        return;
-      }
-
       const fd = new FormData();
+      fd.append("action", "upload_avatar");
       fd.append("csrf_token", csrfToken);
       fd.append("avatar", file);
 
-      try {
-        const res = await fetch(avatarUploadEndpoint, {
-          method: "POST",
-          body: fd,
-          credentials: "same-origin",
-        });
-        const result = await res.json();
+      uploadFromDeviceBtn.disabled = true;
 
-        if (result.success && result.avatar_url) {
-          const img = document.getElementById("avatarImage");
-          const hi = document.getElementById("heroInitial");
-          if (img) {
-            img.src = result.avatar_url;
-            img.style.display = "block";
-          }
-          if (hi) hi.style.visibility = "hidden";
-          showToast(result.message || "تم تحديث الصورة");
-        } else {
-          showToast(result.message || "تعذر رفع الصورة", true);
-        }
-      } catch {
-        showToast("حدث خطأ في الاتصال بالخادم.", true);
+      const result = await postFormData(fd);
+
+      uploadFromDeviceBtn.disabled = false;
+
+      if (result.success && result.avatar_url) {
+        applyAvatarUrl(result.avatar_url);
+        closeAvatarModal();
+        showToast(result.message || "تم تحديث الصورة");
+      } else {
+        showToast(result.message || "تعذر رفع الصورة", true);
       }
     });
   }
 
-  // ── Notification settings (local only — ignore per spec) ────
-  window.saveNotifications = function () {
-    showToast("تم حفظ الإعدادات");
-  };
+  const saveNotificationsBtn = document.getElementById("saveNotificationsBtn");
 
-  // ── Sidebar toggle ─────────────────────────────────────────
+  if (saveNotificationsBtn) {
+    saveNotificationsBtn.addEventListener("click", async () => {
+      const notifyAppointments = document.getElementById("notifyAppointments");
+      const notifyMessages = document.getElementById("notifyMessages");
+      const notifyActivities = document.getElementById("notifyActivities");
+
+      saveNotificationsBtn.disabled = true;
+      saveNotificationsBtn.textContent = "جاري الحفظ...";
+
+      const result = await postAction({
+        action: "save_notifications",
+        appointment_notifications: Boolean(notifyAppointments && notifyAppointments.checked),
+        message_notifications: Boolean(notifyMessages && notifyMessages.checked),
+        activity_reminder_notifications: Boolean(notifyActivities && notifyActivities.checked),
+      });
+
+      saveNotificationsBtn.disabled = false;
+      saveNotificationsBtn.textContent = "حفظ الإعدادات";
+
+      showToast(result.message || "تم حفظ الإعدادات", !result.success);
+    });
+  }
+
   const menuBtn = document.getElementById("menuBtn");
   const sidebar = document.querySelector(".sidebar");
-  const overlay = document.querySelector(".sidebar-overlay");
+
+  let overlay = document.querySelector(".sidebar-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "sidebar-overlay";
+    document.body.appendChild(overlay);
+  }
 
   if (menuBtn && sidebar) {
     menuBtn.addEventListener("click", () => {
       sidebar.classList.toggle("open");
-      if (overlay) overlay.classList.toggle("open");
+      overlay.classList.toggle("open");
     });
 
-    if (overlay) {
-      overlay.addEventListener("click", () => {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("open");
-      });
-    }
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("open");
+    });
   }
 });

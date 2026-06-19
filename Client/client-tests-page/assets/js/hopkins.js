@@ -234,6 +234,7 @@ let currentQuestion = 0;
 let anxietyScore = 0;
 let depressionScore = 0;
 let totalScore = 0;
+let answers = [];
 
 const container = document.getElementById("questionContainer");
 const progress = document.getElementById("progressBar");
@@ -265,6 +266,10 @@ ${a.text}
 }
 
 function nextQuestion(value) {
+  var q = questions[currentQuestion];
+  var selectedAnswer = q.answers.find(function(a){ return a.score === value; });
+  answers.push({q: currentQuestion + 1, value: value, label: selectedAnswer ? selectedAnswer.text : ''});
+
   totalScore += value;
 
   if (currentQuestion <= 9) {
@@ -301,6 +306,18 @@ function showResult() {
       color: "#ef4444",
       desc: "يوجد أعراض واضحة ويُفضل مراجعة أخصائي",
     };
+  }
+
+  function getLevelEnum(val) {
+    if (val < 1.75) {
+      return "MINIMAL";
+    }
+
+    if (val < 2.5) {
+      return "MEDIUM";
+    }
+
+    return "HIGH";
   }
 
   let anxiety = getLevel(anxietyAvg);
@@ -342,6 +359,20 @@ ${
 
 </div>
 `;
+
+// Save to database
+var rawResult = {
+  anxiety: {
+    score: anxietyScore,
+    level: getLevelEnum(anxietyAvg)
+  },
+  depression: {
+    score: depressionScore,
+    level: getLevelEnum(depressionAvg)
+  }
+};
+saveResult(window.ASSESSMENT_ID, answers, totalScore, rawResult);
+
 }
 
 showQuestion();

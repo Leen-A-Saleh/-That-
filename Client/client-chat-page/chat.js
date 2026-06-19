@@ -1,5 +1,6 @@
 let selectedTherapistId = null;
 let pollingInterval = null;
+let searchDebounceTimer = null;
 
 const chatUsers = document.getElementById("chatUsers");
 const chatMessages = document.getElementById("chatMessages");
@@ -10,8 +11,11 @@ const sendBtn = document.getElementById("sendBtn");
 const chatSearch = document.getElementById("chatSearch");
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.querySelector(".sidebar");
+const fileInput = document.getElementById("fileInput");
+const emojiBtn = document.getElementById("emojiBtn");
 
 loadConversations();
+initChatInputExtras();
 
 function loadConversations() {
   apiPost({ action: "get_conversations" })
@@ -24,8 +28,12 @@ function loadConversations() {
 
       renderConversations(data);
 
-      if (!selectedTherapistId && data.length > 0) {
-        selectTherapist(data[0].therapist_id, data[0].therapist_name);
+      if (!selectedTherapistId && data.length > 0 && !getSearchQuery()) {
+        selectTherapist(
+          data[0].therapist_id,
+          data[0].therapist_name,
+          data[0].therapist_avatar
+        );
       }
     })
     .catch(function () {
@@ -34,66 +42,206 @@ function loadConversations() {
     });
 }
 
+function runSearch() {
+  const query = getSearchQuery();
+
+  if (query === "") {
+    loadConversations();
+    return;
+  }
+
+  apiPost({ action: "search", query: query })
+    .then(function (data) {
+      if (!data || typeof data !== "object") {
+        chatUsers.innerHTML = '<p class="no-conv">تعذر البحث</p>';
+        return;
+      }
+
+      const conversations = Array.isArray(data.conversations) ? data.conversations : [];
+      const therapists = Array.isArray(data.therapists) ? data.therapists : [];
+      renderSearchResults(conversations, therapists, query);
+    })
+    .catch(function () {
+      chatUsers.innerHTML = '<p class="no-conv">تعذر البحث</p>';
+    });
+}
+
+function renderSearchResults(conversations, therapists, query) {
+  if (conversations.length === 0 && therapists.length === 0) {
+    chatUsers.innerHTML =
+      '<p class="no-conv">لا توجد نتائج لـ "' + escapeHtml(query) + '"</p>';
+    return;
+  }
+
+  chatUsers.innerHTML = "";
+
+  if (conversations.length > 0) {
+    chatUsers.appendChild(createListSection("المحادثات"));
+    conversations.forEach(function (conv) {
+      chatUsers.appendChild(createConversationItem(conv));
+    });
+  }
+
+  if (therapists.length > 0) {
+    chatUsers.appendChild(createListSection("ابدأ محادثة جديدة"));
+    therapists.forEach(function (therapist) {
+      chatUsers.appendChild(createNewTherapistItem(therapist));
+    });
+  }
+
+  highlightActiveConversation();
+}
+
 function renderConversations(conversations) {
   if (conversations.length === 0) {
     chatUsers.innerHTML = '<p class="no-conv">لا توجد محادثات</p>';
-    showEmptyChat("لا توجد محادثات بعد");
+    if (!getSearchQuery()) {
+      showEmptyChat("لا توجد محادثات بعد — ابحث عن معالج لبدء محادثة");
+    }
     return;
   }
 
   chatUsers.innerHTML = "";
 
   conversations.forEach(function (conv) {
-    const div = document.createElement("div");
-    div.className = "chat-user";
-    div.dataset.name = conv.therapist_name || "";
+    chatUsers.appendChild(createConversationItem(conv));
+  });
 
-    if (conv.therapist_id === selectedTherapistId) {
-      div.classList.add("active");
-    }
+  highlightActiveConversation();
+}
 
-    const letter = (conv.therapist_name || "?").charAt(0);
-    const unread = Number(conv.unread_count || 0);
-    const unreadBadge = unread > 0 ? `<span class="unread-badge">${unread}</span>` : "";
+function createListSection(title) {
+  const section = document.createElement("div");
+  section.className = "chat-list-section";
+  section.textContent = title;
+  return section;
+}
 
-    div.innerHTML = `
-      <div class="avatar">${escapeHtml(letter)}</div>
-      <div class="conv-info">
-        <h4>${escapeHtml(conv.therapist_name)}</h4>
-        <p>${escapeHtml(conv.last_message || "")}</p>
-      </div>
-      <div class="conv-meta">
-        <span class="conv-time">${escapeHtml(conv.last_message_time || "")}</span>
-        ${unreadBadge}
-      </div>
-    `;
+function createChatHeaderContent(name, avatarUrl) {
+  const wrap = document.createElement("div");
+  wrap.className = "chat-header-profile";
 
-    div.addEventListener("click", function () {
-      selectTherapist(conv.therapist_id, conv.therapist_name);
+  const avatar = createAvatarElement(name, avatarUrl);
+  avatar.classList.add("chat-header-avatar");
+  wrap.appendChild(avatar);
+
+  const title = document.createElement("h3");
+  title.textContent = name || "";
+  wrap.appendChild(title);
+
+  return wrap;
+}
+
+function createAvatarElement(name, avatarUrl) {
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  const displayName = name || "?";
+
+  if (avatarUrl) {
+    avatar.classList.add("avatar--image");
+    const img = document.createElement("img");
+    img.src = avatarUrl;
+    img.alt = displayName;
+    img.addEventListener("error", function () {
+      avatar.classList.remove("avatar--image");
+      img.remove();
+      avatar.textContent = displayName.charAt(0);
     });
+    avatar.appendChild(img);
+  } else {
+    avatar.textContent = displayName.charAt(0);
+  }
 
-    chatUsers.appendChild(div);
+  return avatar;
+}
+
+function createConversationItem(conv) {
+  const div = document.createElement("div");
+  div.className = "chat-user";
+  div.dataset.therapistId = String(conv.therapist_id);
+  div.dataset.therapistName = conv.therapist_name || "";
+  div.dataset.therapistAvatar = conv.therapist_avatar || "";
+
+  const unread = Number(conv.unread_count || 0);
+  const unreadBadge =
+    unread > 0 ? `<span class="unread-badge">${unread}</span>` : "";
+
+  div.appendChild(createAvatarElement(conv.therapist_name, conv.therapist_avatar));
+
+  const text = document.createElement("div");
+  text.className = "chat-user-text";
+  text.innerHTML = `
+    <h4>
+      <span>${escapeHtml(conv.therapist_name)}</span>
+      ${unreadBadge}
+    </h4>
+    <p>${escapeHtml(conv.last_message || "")}</p>
+  `;
+  div.appendChild(text);
+
+  const meta = document.createElement("div");
+  meta.className = "conv-meta";
+  meta.innerHTML = `<span class="conv-time">${escapeHtml(conv.last_message_time || "")}</span>`;
+  div.appendChild(meta);
+
+  div.addEventListener("click", function () {
+    selectTherapist(conv.therapist_id, conv.therapist_name, conv.therapist_avatar);
+  });
+
+  return div;
+}
+
+function createNewTherapistItem(therapist) {
+  const div = document.createElement("div");
+  div.className = "chat-user new-chat";
+  div.dataset.therapistId = String(therapist.therapist_id);
+  div.dataset.therapistName = therapist.therapist_name || "";
+  div.dataset.therapistAvatar = therapist.therapist_avatar || "";
+
+  div.appendChild(createAvatarElement(therapist.therapist_name, therapist.therapist_avatar));
+
+  const text = document.createElement("div");
+  text.className = "conv-info";
+  text.innerHTML = `
+    <h4>${escapeHtml(therapist.therapist_name)}</h4>
+    <p>محادثة جديدة</p>
+  `;
+  div.appendChild(text);
+
+  div.addEventListener("click", function () {
+    selectTherapist(therapist.therapist_id, therapist.therapist_name, therapist.therapist_avatar);
+  });
+
+  return div;
+}
+
+function highlightActiveConversation() {
+  document.querySelectorAll(".chat-user").forEach(function (item) {
+    const itemId = Number(item.dataset.therapistId || 0);
+    item.classList.toggle("active", itemId === selectedTherapistId);
   });
 }
 
-function selectTherapist(therapistId, therapistName) {
+function selectTherapist(therapistId, therapistName, therapistAvatar) {
   selectedTherapistId = therapistId;
 
   chatHeader.style.display = "";
-  chatHeader.innerHTML = `<h3>${escapeHtml(therapistName)}</h3>`;
+  chatHeader.innerHTML = "";
+  chatHeader.appendChild(createChatHeaderContent(therapistName, therapistAvatar));
   chatInputArea.style.display = "";
 
-  document.querySelectorAll(".chat-user").forEach(function (item) {
-    item.classList.remove("active");
-    if (item.dataset.name === therapistName) {
-      item.classList.add("active");
-    }
-  });
+  highlightActiveConversation();
 
   loadMessages();
 
   clearInterval(pollingInterval);
-  pollingInterval = setInterval(loadMessages, 5000);
+  pollingInterval = setInterval(function () {
+    if (selectedTherapistId) {
+      loadMessages();
+    }
+    refreshConversationList();
+    updateChatSidebarBadge();
+  }, 5000);
 }
 
 function showEmptyChat(message) {
@@ -119,6 +267,9 @@ function loadMessages() {
     .then(function (data) {
       if (!Array.isArray(data)) return;
       renderMessages(data);
+      refreshConversationList();
+      updateChatSidebarBadge();
+      if (typeof window.refreshGlobalBadges === 'function') window.refreshGlobalBadges();
     })
     .catch(function () {});
 }
@@ -134,22 +285,7 @@ function renderMessages(messages) {
   messages.forEach(function (msg) {
     const div = document.createElement("div");
     div.className = msg.isMe ? "message me" : "message other";
-
-    if (msg.type === "IMAGE" && msg.file_path) {
-      const img = document.createElement("img");
-      img.src = msg.file_path;
-      img.style.maxWidth = "200px";
-      img.style.borderRadius = "8px";
-      div.appendChild(img);
-    } else if (msg.type === "FILE" && msg.file_path) {
-      const link = document.createElement("a");
-      link.href = msg.file_path;
-      link.target = "_blank";
-      link.textContent = "ملف مرفق";
-      div.appendChild(link);
-    } else {
-      div.appendChild(document.createTextNode(msg.content || ""));
-    }
+    appendMessageBody(div, msg);
 
     const time = document.createElement("span");
     time.textContent = msg.time || "";
@@ -159,6 +295,57 @@ function renderMessages(messages) {
   });
 
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function messageFileUrl(msg) {
+  return msg.file_url || msg.file_path || "";
+}
+
+function appendMessageBody(div, msg) {
+  const type = String(msg.type || "TEXT").toUpperCase();
+  const url = messageFileUrl(msg);
+  const label = (msg.content || "").trim() || "ملف مرفق";
+
+  if (type === "IMAGE" && url) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.className = "msg-image-link";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = label;
+    img.className = "msg-image";
+    link.appendChild(img);
+    div.appendChild(link);
+    return;
+  }
+
+  if (type === "FILE" && url) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.className = "msg-file";
+    link.innerHTML = '<i class="fa-solid fa-file"></i>';
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = label;
+    link.appendChild(nameSpan);
+    div.appendChild(link);
+    return;
+  }
+
+  if (type === "VOICE" && url) {
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.preload = "metadata";
+    audio.className = "msg-voice";
+    audio.src = url;
+    div.appendChild(audio);
+    return;
+  }
+
+  div.appendChild(document.createTextNode(msg.content || ""));
 }
 
 function sendMessage() {
@@ -175,15 +362,162 @@ function sendMessage() {
     content: content,
   })
     .then(function (data) {
-      if (!data.success) return;
+      if (!data || !data.success) return;
 
       messageInput.value = "";
       loadMessages();
-      loadConversations();
+      refreshConversationList();
+      updateChatSidebarBadge();
     })
     .finally(function () {
       sendBtn.disabled = false;
     });
+}
+
+function refreshConversationList() {
+  if (getSearchQuery()) {
+    runSearch();
+  } else {
+    loadConversations();
+  }
+}
+
+function getSearchQuery() {
+  return chatSearch.value.trim();
+}
+
+function updateChatSidebarBadge() {
+  if (typeof window.refreshClientChatSidebarBadge === "function") {
+    window.refreshClientChatSidebarBadge();
+  }
+}
+
+function initChatInputExtras() {
+  if (emojiBtn && messageInput) {
+    emojiBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleEmojiPicker();
+    });
+
+    document.addEventListener("click", function () {
+      closeEmojiPicker();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", sendFile);
+  }
+}
+
+function toggleEmojiPicker() {
+  const existing = document.querySelector(".emoji-picker");
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const picker = document.createElement("div");
+  picker.className = "emoji-picker";
+  const emojis = [
+    "😀", "😍", "😂", "😢", "😎", "👍", "❤️", "🙌", "🎉", "🤔",
+    "😴", "😡", "🤩", "🥳", "😇", "😭",
+  ];
+
+  emojis.forEach(function (emoji) {
+    const span = document.createElement("span");
+    span.textContent = emoji;
+    span.addEventListener("click", function (event) {
+      event.stopPropagation();
+      messageInput.value += emoji;
+      closeEmojiPicker();
+      messageInput.focus();
+    });
+    picker.appendChild(span);
+  });
+
+  picker.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+
+  const anchor = chatInputArea || emojiBtn;
+  if (anchor) {
+    anchor.appendChild(picker);
+  } else {
+    document.body.appendChild(picker);
+  }
+}
+
+function closeEmojiPicker() {
+  const picker = document.querySelector(".emoji-picker");
+  if (picker) {
+    picker.remove();
+  }
+}
+
+function sendFile() {
+  if (!selectedTherapistId || !fileInput) return;
+
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+
+  if (file.size > 10 * 1024 * 1024) {
+    showToast("حجم الملف يتجاوز 10 ميجا");
+    fileInput.value = "";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("action", "send_file");
+  formData.append("therapistId", String(selectedTherapistId));
+  formData.append("file", file);
+
+  if (sendBtn) sendBtn.disabled = true;
+
+  apiPostFormData(formData)
+    .then(function (data) {
+      if (!data || !data.success) {
+        showToast((data && (data.error || data.message)) || "تعذّر رفع الملف");
+        return;
+      }
+
+      loadMessages();
+      refreshConversationList();
+      updateChatSidebarBadge();
+    })
+    .catch(function () {
+      showToast("حدث خطأ في الاتصال");
+    })
+    .finally(function () {
+      if (sendBtn) sendBtn.disabled = false;
+      fileInput.value = "";
+    });
+}
+
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.style.cssText =
+    "position:fixed;top:20px;left:50%;transform:translateX(-50%);" +
+    "background:#333;color:#fff;padding:12px 25px;border-radius:8px;" +
+    "font-family:Cairo,sans-serif;font-size:14px;box-shadow:0 4px 15px rgba(0,0,0,0.2);" +
+    "z-index:3000;animation:chatFadeInOut 2.5s forwards;";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function () {
+    toast.remove();
+  }, 2500);
+}
+
+if (!document.getElementById("chat-toast-styles")) {
+  const style = document.createElement("style");
+  style.id = "chat-toast-styles";
+  style.textContent =
+    "@keyframes chatFadeInOut{" +
+    "0%{opacity:0;transform:translate(-50%,-20px);}" +
+    "10%{opacity:1;transform:translate(-50%,0);}" +
+    "80%{opacity:1;transform:translate(-50%,0);}" +
+    "100%{opacity:0;transform:translate(-50%,-10px);}" +
+    "}";
+  document.head.appendChild(style);
 }
 
 sendBtn.addEventListener("click", sendMessage);
@@ -195,12 +529,8 @@ messageInput.addEventListener("keypress", function (event) {
 });
 
 chatSearch.addEventListener("input", function () {
-  const query = chatSearch.value.trim().toLowerCase();
-
-  document.querySelectorAll("#chatUsers .chat-user").forEach(function (item) {
-    const name = (item.dataset.name || "").toLowerCase();
-    item.style.display = name.includes(query) ? "" : "none";
-  });
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(runSearch, 300);
 });
 
 let overlay = document.querySelector(".sidebar-overlay");
@@ -225,6 +555,15 @@ function apiPost(params) {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(params),
+  }).then(function (response) {
+    return response.json();
+  });
+}
+
+function apiPostFormData(formData) {
+  return fetch(CHAT_API_URL, {
+    method: "POST",
+    body: formData,
   }).then(function (response) {
     return response.json();
   });

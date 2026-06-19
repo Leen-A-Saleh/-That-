@@ -1,5 +1,17 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../Database/helpers.php';
+require_once __DIR__ . '/../../../Database/client.php';
+
+start_secure_session();
+require_auth();
+require_role(['CLIENT']);
+
+$mainScriptVersion = (string) filemtime(__DIR__ . '/main.js');
+?>
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <title>تمرين التنفس الاحترافي</title>
@@ -30,6 +42,9 @@
     <button id="backBtn" >رجوع</button>
 </div>
 
-<script src="main.js"></script>
+<!-- نظام التنبيهات الموحّد SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/That-Copy/Public/js/sweet-alerts.js"></script>
+<script src="main.js?v=<?= e($mainScriptVersion) ?>"></script>
 </body>
 </html>

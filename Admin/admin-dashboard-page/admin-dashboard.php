@@ -51,7 +51,7 @@ $growthData  = get_monthly_growth();
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon bg-blue"><img src="../images/Container.svg" /></div>
-            <span class="stat-badge"><?= e((string) $stats['rating']) ?>%+</span>
+            <span class="stat-badge"><?= e((string) $stats['activeUsersGrowth']) ?>%</span>
           </div>
           <div class="stat-label">المستخدمين النشطين</div>
           <div class="stat-value"><?= e((string) $stats['activeUsers']) ?></div>
@@ -94,7 +94,7 @@ $growthData  = get_monthly_growth();
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon bg-green"><img src="../images/Container (4).svg" /></div>
-            <span class="stat-badge">0000</span>
+            <span class="stat-badge"><?= e((string) $stats['revenueGrowth']) ?>%</span>
           </div>
           <div class="stat-label">الإيرادات</div>
           <div class="stat-value">
@@ -106,7 +106,7 @@ $growthData  = get_monthly_growth();
           <div class="stat-top">
             <div class="stat-icon bg-pink"><img src="../images/Container (5).svg" /></div>
             <span class="stat-badge">
-              <?= e((string) $stats['ratingGrowth']) ?>
+              <?= e((string) $stats['ratingGrowth']) ?>%
             </span>
           </div>
           <div class="stat-label">معدل الرضا</div>
@@ -161,10 +161,10 @@ $growthData  = get_monthly_growth();
               <p class="no-data">لا توجد أنشطة حديثة</p>
             <?php else: ?>
               <?php foreach ($activities as $activity): ?>
-                <div class="act-item">
+                <div class="act-item" data-activity-type="<?= e($activity['activity_type']) ?>">
                   <span class="act-dot"></span>
                   <div class="act-body">
-                    <p class="act-title"><?= e($activity['title']) ?></p>
+                    <p class="act-title"><?= e($activity['activity_text']) ?></p>
                     <span class="act-time"><?= e($activity['time']) ?></span>
                   </div>
                 </div>
@@ -209,6 +209,7 @@ $growthData  = get_monthly_growth();
   <script>
     const WEEKLY_DATA = <?= json_encode($weeklyData, JSON_UNESCAPED_UNICODE) ?>;
     const GROWTH_DATA = <?= json_encode($growthData, JSON_UNESCAPED_UNICODE) ?>;
+    const ACTIVITIES_DATA = <?= json_encode($activities, JSON_UNESCAPED_UNICODE) ?>;
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

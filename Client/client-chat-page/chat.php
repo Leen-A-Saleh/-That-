@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
 
 $showNotificationDot = false;
 try {
-  $showNotificationDot = client_has_unread_notifications_for_current_user();
+  $showNotificationDot = hasUnreadNotifications();
 } catch (Throwable) {
   $showNotificationDot = false;
 }
@@ -18,7 +20,7 @@ try {
 try {
   $currentClientId = client_current_user_id();
 } catch (Throwable) {
-  redirect('/That-Copy/Auth/login/index.php');
+  redirect('/That-Copy/Public/login/index.php');
   exit;
 }
 ?>
@@ -61,7 +63,7 @@ try {
       <!--  Conversation list -->
       <div class="chat-list">
         <div class="chat-search">
-          <input type="text" id="chatSearch" placeholder="بحث عن محادثة..." />
+          <input type="text" id="chatSearch" placeholder="بحث عن محادثة أو معالج..." />
         </div>
 
         <div class="chat-users" id="chatUsers">
@@ -81,12 +83,12 @@ try {
         </div>
 
         <div class="chat-input" id="chatInputArea" style="display:none;">
-          <button class="emoji" id="emojiBtn">
-            <img src="../images/Smile.svg" alt="Emoji" />
+          <button type="button" class="emoji" id="emojiBtn" aria-label="إيموجي">
+            <i class="fa-sharp fa-solid fa-face-smile"></i>
           </button>
 
-          <label class="file-btn">
-            <img src="..//images/Paperclip.svg" alt="Attach" />
+          <label class="file-btn" aria-label="إرفاق ملف">
+            <i class="fa-solid fa-link"></i>
             <input type="file" hidden id="fileInput" />
           </label>
 
@@ -108,6 +110,7 @@ try {
     const CURRENT_CLIENT_ID = <?= json_encode($currentClientId) ?>;
     const CHAT_API_URL = '/That-Copy/Client/client-chat-page/chat-database.php';
   </script>
+  <div class="sidebar-overlay"></div>
   <script src="./chat.js"></script>
 </body>
 

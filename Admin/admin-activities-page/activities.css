@@ -173,6 +173,13 @@
   justify-content: center;
 }
 
+.act-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .act-card-thumb i {
   font-size: 40px;
   color: rgba(255, 255, 255, 0.85);

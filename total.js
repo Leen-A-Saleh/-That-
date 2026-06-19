@@ -40,8 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const group = step.querySelectorAll('input[type="radio"][name="' + name + '"]');
         const checked = Array.from(group).some(r => r.checked);
         if (!checked) {
-          alert("رجاءً اختر إجابة لهذا السؤال قبل المتابعة.");
-          group[0].focus();
+          showWarningAlert("رجاءً اختر إجابة لهذا السؤال قبل المتابعة.").then(() => group[0].focus());
           return false;
         }
       }
@@ -50,18 +49,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (checkboxes.length > 0) {
       const anyChecked = Array.from(checkboxes).some(c => c.checked);
       if (!anyChecked) {
-        alert("رجاءً اختر خياراً واحداً على الأقل قبل المتابعة.");
-        checkboxes[0].focus();
+        showWarningAlert("رجاءً اختر خياراً واحداً على الأقل قبل المتابعة.").then(() => checkboxes[0].focus());
         return false;
       }
     }
     const textInputs = step.querySelectorAll(
-      'input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea'
+      'input[type="text"]:not([disabled]), input[type="number"]:not([disabled]), input[type="email"]:not([disabled]), input[type="tel"]:not([disabled]), textarea:not([disabled])'
     );
     for (const input of textInputs) {
       if (input.value.trim() === "") {
-        alert("رجاءً املأ الحقل قبل المتابعة.");
-        input.focus();
+        showWarningAlert("رجاءً املأ الحقل قبل المتابعة.").then(() => input.focus());
         return false;
       }
     }
@@ -83,8 +80,9 @@ document.addEventListener("DOMContentLoaded", function () {
       for (const [name, value] of formData.entries()) {
         console.log(name, "=>", value);
       }
-      alert("تم إرسال الاستبيان بنجاح، شكرًا لمشاركتك!");
-      //  توجيه لصفحة ثانية: 
+      showSuccessToast("تم إرسال الاستبيان بنجاح، شكرًا لمشاركتك!").then(() => {
+        //  توجيه لصفحة ثانية: 
+      });
     }
   });
   // زر السابق

@@ -134,7 +134,6 @@ function renderDesktopTable(list) {
           <div class="row-actions">
             <button class="action-btn btn-view"   title="عرض"   onclick="handleView(${t.id})"><i class="fa-regular fa-eye"></i></button>
             <button class="action-btn btn-edit"   title="تعديل" onclick="handleEdit(${t.id})"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="action-btn btn-delete" title="حذف"   onclick="handleDelete(${t.id})"><i class="fa-regular fa-trash-can"></i></button>
           </div>
         </td>
       </tr>`;
@@ -310,7 +309,7 @@ async function handleSave() {
     closeModal();
     setTimeout(() => window.location.reload(), 600);
   } catch (err) {
-    alert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
+    showErrorAlert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
   }
 }
 
@@ -323,7 +322,7 @@ async function confirmDelete() {
     pendingDeleteId = null;
     setTimeout(() => window.location.reload(), 600);
   } catch (err) {
-    alert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
+    showErrorAlert(err.message || "حدث خطأ، يرجى المحاولة مجدداً");
   }
 }
 
@@ -380,6 +379,3 @@ function initSidebar() {
   menuBtn.addEventListener("click", () => { sidebar.classList.toggle("open"); overlay.classList.toggle("open"); });
   overlay.addEventListener("click", () => { sidebar.classList.remove("open"); overlay.classList.remove("open"); });
 }
-
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) logoutBtn.addEventListener("click", () => { window.location.href = "../index.php"; });

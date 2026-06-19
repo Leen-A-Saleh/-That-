@@ -3,16 +3,37 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../Database/helpers.php';
 require_once __DIR__ . '/../../Database/client.php';
+require_once __DIR__ . '/../../Database/profile-database.php';
+// محرّك التوصية بالذكاء الاصطناعي الداخلي (Rule-Based)
+require_once __DIR__ . '/therapist_recommendation.php';
 
 start_secure_session();
 require_role(['CLIENT']);
 
 $therapists = [];
 $bookingError = trim((string) ($_GET['booking_error'] ?? ''));
+$showNotificationDot = false;
+
+// نتيجة نظام التوصية: أفضل الأخصائيين المناسبين للمستخدم بناءً على إجابات استبيانه
+$recommendation = ['minor' => false, 'has_survey' => false, 'age' => 0, 'recommendations' => []];
+
 try {
   $therapists = client_get_therapist_listings();
 } catch (Throwable $exception) {
   $therapists = [];
+}
+
+try {
+  $recommendation = recommend_for_user(client_current_user_id(), 3);
+} catch (Throwable $exception) {
+  // في حال أي خطأ لا نكسر الصفحة؛ نكتفي بعدم عرض التوصيات
+  $recommendation = ['minor' => false, 'has_survey' => false, 'age' => 0, 'recommendations' => []];
+}
+
+try {
+  $showNotificationDot = hasUnreadNotifications();
+} catch (Throwable) {
+  $showNotificationDot = false;
 }
 ?>
 <!doctype html>
@@ -39,7 +60,7 @@ try {
     <div class="nav-right">
       <a href="../client-notifications-page/notifications.php" class="bell">
         <i class="fa-regular fa-bell"></i>
-        <span class="dot" id="notificationDot"></span>
+        <span class="dot" id="notificationDot"<?= $showNotificationDot ? '' : ' style="display:none;"' ?>></span>
       </a>
     </div>
   </header>
@@ -52,6 +73,53 @@ try {
       <h1>مرحباً بك في ذات</h1>
       <p>إبحث عن الأخصائي المناسب لك واحجز موعدك الآن</p>
     </section>
+
+    <?php if (!empty($recommendation['recommendations'])): ?>
+      <!-- ─── قسم التوصيات الذكية: ناتج نظام الـ Rule-Based AI ─── -->
+      <section class="reco-section">
+        <div class="reco-header">
+          <h2><i class="fa-solid fa-wand-magic-sparkles"></i> الأخصائيون المقترحون لك</h2>
+          <p>اقتراحات مبنية على تحليل إجاباتك في الاستبيان</p>
+        </div>
+
+        <div class="reco-doctors">
+          <?php foreach ($recommendation['recommendations'] as $reco): ?>
+            <div class="doctor-card reco-card">
+              <span class="reco-badge"><i class="fa-solid fa-star"></i> مقترح لك</span>
+              <img src="<?= e((string) $reco['image']) ?>" onerror="this.src='../../storage/avatars/user.png'" alt="<?= e((string) $reco['name']) ?>">
+              <div class="doctor-info">
+                <div class="doctor-name"><?= e((string) $reco['name']) ?></div>
+                <div class="doctor-special"><?= e((string) $reco['specialization']) ?></div>
+                <div class="doctor-degree"><?= e((string) $reco['certification']) ?></div>
+                <div class="doctor-details">
+                  <i class="fa fa-briefcase"></i> <?= e((string) $reco['experience_text']) ?><br>
+                  <i class="fa fa-sack-dollar"></i> جلسة استشارية: <?= e((string) $reco['consult_price']) ?><br>
+                  <i class="fa fa-coins"></i> جلسة علاجية: <?= e((string) $reco['therapy_price']) ?><br>
+                  <i class="fa fa-envelope"></i>
+                  <a href="mailto:<?= e((string) $reco['email']) ?>"><?= e((string) $reco['email']) ?></a>
+                </div>
+
+                <?php if (!empty($reco['reasons'])): ?>
+                  <div class="reco-reasons">
+                    <span class="reco-reasons-title"><i class="fa-solid fa-circle-info"></i> سبب الاقتراح:</span>
+                    <ul>
+                      <?php foreach ($reco['reasons'] as $reason): ?>
+                        <li><?= e((string) $reason) ?></li>
+                      <?php endforeach; ?>
+                    </ul>
+                  </div>
+                <?php endif; ?>
+
+                <button class="book-btn" type="button"
+                  onclick="window.location.href='../client-booking-page/booking.php?id=<?= (int) $reco['id'] ?>'">
+                  حجز موعد
+                </button>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </section>
+    <?php endif; ?>
 
     <div class="search">
       <input type="text" placeholder="إبحث عن أخصائي أو تخصص..." id="searchInput" />
@@ -70,88 +138,8 @@ try {
 
   <script>
     const doctorsFromDatabase = <?= json_encode($therapists, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
-
-    (() => {
-      const container = document.getElementById("doctorsContainer");
-      const count = document.getElementById("doctorCount");
-      const searchInput = document.getElementById("searchInput");
-      let doctors = Array.isArray(doctorsFromDatabase) ? doctorsFromDatabase : [];
-
-      function renderDoctors(list) {
-        if (!container) return;
-
-        container.innerHTML = "";
-
-        if (count) {
-          count.innerText = list.length;
-        }
-
-        list.forEach((doc) => {
-          const availability = Array.isArray(doc.availability) && doc.availability.length > 0
-            ? doc.availability.map((slot) => `${slot.day_label} ${slot.start} - ${slot.end}`).join("<br>")
-            : doc.work;
-
-          container.innerHTML += `
-<div class="doctor-card">
-<img src="${doc.image}" onerror="this.src='../images/default-doctor.png'">
-<div class="doctor-info">
-
-<div class="doctor-name">${doc.name}</div>
-<div class="doctor-special">${doc.special}</div>
-<div class="doctor-degree">${doc.degree}</div>
-<div class="doctor-details">
-<i class="fa fa-briefcase"></i> ${doc.experience}<br>
-<i class="fa fa-clock"></i> ${availability}<br>
-<i class="fa fa-sack-dollar"></i> جلسة استشارية: ${doc.consultPrice}<br>
-<i class="fa fa-coins"></i> جلسة علاجية: ${doc.therapyPrice}<br>
-<i class="fa fa-envelope"></i>
-<a href="mailto:${doc.email}">
-${doc.email}
-</a>
-</div>
-<button class="book-btn" data-id="${doc.id}">
-حجز موعد
-</button>
-</div>
-</div>
-`;
-        });
-      }
-
-      renderDoctors(doctors);
-
-      if (searchInput) {
-        searchInput.addEventListener("input", function () {
-          const value = this.value.toLowerCase();
-          const filtered = doctors.filter(
-            (doc) =>
-              String(doc.name || "").toLowerCase().includes(value) ||
-              String(doc.special || "").toLowerCase().includes(value) ||
-              String(doc.degree || "").toLowerCase().includes(value)
-          );
-
-          renderDoctors(filtered);
-        });
-      }
-
-      document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("book-btn")) {
-          const doctorId = Number(e.target.dataset.id || 0);
-          if (!Number.isInteger(doctorId) || doctorId <= 0) {
-            alert("تعذر تحديد الأخصائي. يرجى المحاولة مرة أخرى.");
-            return;
-          }
-
-          window.location.href = `../client-booking-page/booking.php?id=${encodeURIComponent(doctorId)}`;
-        }
-      });
-    })();
+    const bookingError = <?= json_encode($bookingError, JSON_UNESCAPED_UNICODE) ?>;
   </script>
-  <?php if ($bookingError === 'missing_therapist_id'): ?>
-    <script>
-      alert("لا يمكن فتح صفحة الحجز بدون تحديد أخصائي.");
-    </script>
-  <?php endif; ?>
   <script src="./dashboard.js"></script>
 </body>
 

@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../Database/auth.php';
 require_once __DIR__ . '/notifications-database.php';
 
 start_secure_session();
+require_auth();
 require_role(['CLIENT']);
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && (string) ($_GET['action'] ?? '') === 'badge_state') {
@@ -14,7 +15,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && (string) ($_GET['action'] ??
   try {
     echo json_encode([
       'success' => true,
-      'has_unread' => client_has_unread_notifications_for_current_user(),
+      'has_unread' => hasUnreadNotifications(),
     ], JSON_UNESCAPED_UNICODE);
   } catch (Throwable $exception) {
     http_response_code(500);
@@ -176,6 +177,7 @@ try {
     window.initialNotifications = <?= json_encode($notifications, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     window.initialNotificationStats = <?= json_encode($stats, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
   </script>
+  <div class="sidebar-overlay"></div>
   <script src="./notifications.js"></script>
 </body>
 

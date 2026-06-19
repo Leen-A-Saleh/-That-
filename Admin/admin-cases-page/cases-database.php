@@ -3,6 +3,8 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../../Database/db.php';
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 function getCasesStats(): array
 {
     $sql = "SELECT 
@@ -21,7 +23,7 @@ function getCasesStats(): array
     ];
 }
 
-// Retrieve All Cases with pagination and related names
+// ─── Queries ──────────────────────────────────────────────────────────────────
 
 function getCases(int $page = 1, int $limit = 8, string $search = '', string $status = ''): array
 {

@@ -493,6 +493,128 @@ footer {
   margin-right: 3px;
 }
 
+.avatar-modal[hidden] {
+  display: none !important;
+}
+
+.avatar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.avatar-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.avatar-modal-dialog {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.2);
+}
+
+.avatar-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.avatar-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.avatar-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.avatar-modal-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.avatar-modal-upload {
+  margin-bottom: 16px;
+}
+
+.avatar-modal-upload .save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-width: 180px;
+}
+
+.avatar-modal-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.ready-avatars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 12px;
+}
+
+.ready-avatar-item {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 6px;
+  background: #f5f7f5;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.ready-avatar-item:hover {
+  border-color: #30b7c4;
+  transform: translateY(-2px);
+}
+
+.ready-avatar-item.is-selected {
+  border-color: #30b7c4;
+  background: #e7f6f7;
+}
+
+.ready-avatar-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.ready-avatars-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+  padding: 16px 8px;
+}
+
 
 @media (max-width: 1024px) {
   .profile-container {
@@ -508,7 +630,7 @@ footer {
   .sidebar {
     transform: translateX(100%);
     position: fixed;
-    z-index: 1500;
+    z-index: 999;
   }
 
   .sidebar.open {

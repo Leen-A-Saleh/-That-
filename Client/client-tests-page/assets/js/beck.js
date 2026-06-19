@@ -183,6 +183,7 @@ answers:[
 
 let currentQuestion=0;
 let score=0;
+let answers=[];
 
 const container=document.getElementById("questionContainer");
 const progress=document.getElementById("progressBar");
@@ -210,6 +211,10 @@ progress.style.width=((currentQuestion+1)/questions.length)*100+"%";
 }
 
 function nextQuestion(value){
+
+var q=questions[currentQuestion];
+var selectedAnswer=q.answers.find(function(a){return a.score===value;});
+answers.push({q:currentQuestion+1, value:value, label:selectedAnswer?selectedAnswer.text:''});
 
 score+=value;
 
@@ -289,6 +294,23 @@ ${desc}
 </div>
 
 `;
+
+  // Compute level enum for database
+  var level;
+  if (score >= 10 && score <= 15) {
+    level = 'LOW';
+  } else if (score >= 16 && score <= 19) {
+    level = 'MEDIUM';
+  } else if (score >= 20 && score <= 29) {
+    level = 'HIGH';
+  } else if (score >= 30) {
+    level = 'SEVERE';
+  } else {
+    level = 'MINIMAL';
+  }
+
+  // Save to database (raw_result is NULL for Beck)
+  saveResult(window.ASSESSMENT_ID, answers, score, level, null);
 
 }
 showQuestion();

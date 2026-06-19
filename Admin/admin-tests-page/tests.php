@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../partials/require-admin.php';
 require_once __DIR__ . '/tests-database.php';
 
+// ─── AJAX Handler ─────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
   header('Content-Type: application/json; charset=utf-8');
@@ -46,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
 
   exit;
 }
+
+// ─── Page Data ────────────────────────────────────────────────────────────────
 
 $stats = tests_getStats();
 $monthly  = tests_getMonthly();

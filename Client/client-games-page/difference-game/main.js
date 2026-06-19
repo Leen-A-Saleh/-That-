@@ -8,6 +8,9 @@ let config = {
   scene: { preload, create },
 };
 
+const API_URL = "difference-database.php";
+const LEVEL_TIME = 20;
+
 let game = new Phaser.Game(config);
 
 let currentLevel = 0;
@@ -87,6 +90,11 @@ let timerText;
 let timerEvent;
 let isGameOver;
 let timeLeft;
+let levelStartedAt = 0;
+let gameSession;
+let finalSaveStarted = false;
+let finalSaveCompleted = false;
+let sessionRunId = 0;
 
 function preload() {
   levels.forEach((l) => {
@@ -94,7 +102,7 @@ function preload() {
     this.load.image(l.imgR, l.pathR);
   });
 
-  this.load.audio("success", "./assests/success.mp3");
+  this.load.audio("success", "./assests/win.mp3");
   this.load.audio("win", "./assests/win.mp3");
   this.load.audio("bgMusic", "./assests/bgMusic.mp3");
 }
@@ -108,7 +116,20 @@ function create() {
     bgMusic.play();
   }
 
+  resetGameSession();
   startLevel.call(this);
+}
+
+function resetGameSession() {
+  sessionRunId++;
+  gameSession = {
+    totalLevels: levels.length,
+    totalTime: 0,
+    time_per_level: {},
+    levels_passed: {},
+  };
+  finalSaveStarted = false;
+  finalSaveCompleted = false;
 }
 
 function startLevel() {
@@ -121,7 +142,8 @@ function startLevel() {
 
   isGameOver = false;
   foundCount = 0;
-  timeLeft = 20;
+  timeLeft = LEVEL_TIME;
+  levelStartedAt = Date.now();
 
   let halfWidth = 600;
   let centerY = 300;
@@ -163,7 +185,7 @@ function startLevel() {
     if (isGameOver) return;
 
     data.diffs.forEach((d) => {
-      if (d.found) return;
+      if (d.found || isGameOver) return;
 
       let hit = d.pts.some(
         (pt) =>
@@ -198,8 +220,12 @@ function startLevel() {
 }
 
 function showWin() {
+  if (isGameOver) return;
   isGameOver = true;
   if (timerEvent) timerEvent.remove();
+
+  recordLevelResult("pass");
+  let usedTime = gameSession.time_per_level[String(currentLevel + 1)] || 0;
 
   if (bgMusic) {
     this.tweens.add({
@@ -212,11 +238,11 @@ function showWin() {
   let winSound = this.sound.add("win");
   winSound.play({ volume: 0.6 });
 
-  let usedTime = 15 - timeLeft;
-
   let isLastLevel = currentLevel === levels.length - 1;
 
   if (isLastLevel) {
+    saveFinalSession(true);
+
     let centerX = 600;
     let centerY = 300;
 
@@ -235,7 +261,7 @@ function showWin() {
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, centerY - 10, ` الوقت المستغرق: ${usedTime} ثانية`, {
+      .text(centerX, centerY - 10, ` الوقت المستغرق: ${gameSession.totalTime} ثانية`, {
         fontSize: "30px",
         fill: "#000",
       })
@@ -253,6 +279,7 @@ function showWin() {
 
     button.on("pointerdown", () => {
       currentLevel = 0;
+      resetGameSession();
       startLevel.call(this);
     });
   } else {
@@ -266,14 +293,17 @@ function showWin() {
       });
     }
 
-    let canGoNext = true;
-    showOverlay.call(this, "🎉 أحسنت", 0x1e678c, canGoNext);
+    showOverlay.call(this, "🎉 أحسنت", 0x1e678c, true);
   }
 }
 
 function showLoss() {
+  if (isGameOver) return;
   isGameOver = true;
   if (timerEvent) timerEvent.remove();
+
+  recordLevelResult("fail");
+  saveFinalSession(false);
 
   levels[currentLevel].diffs.forEach((d) => {
     if (!d.found) {
@@ -312,9 +342,68 @@ function showLoss() {
       .setInteractive({ useHandCursor: true });
 
     button.on("pointerdown", () => {
+      currentLevel = 0;
+      resetGameSession();
       startLevel.call(this);
     });
   });
+}
+
+function recordLevelResult(status) {
+  let levelNumber = String(currentLevel + 1);
+  if (gameSession.levels_passed[levelNumber]) return;
+
+  let elapsed = Math.round((Date.now() - levelStartedAt) / 1000);
+  let usedTime = Math.max(0, Math.min(LEVEL_TIME, elapsed));
+
+  gameSession.time_per_level[levelNumber] = usedTime;
+  gameSession.levels_passed[levelNumber] = status;
+  gameSession.totalTime = Object.values(gameSession.time_per_level).reduce(
+    (sum, seconds) => sum + Number(seconds || 0),
+    0,
+  );
+}
+
+function saveFinalSession(isCompleted) {
+  if (finalSaveStarted || finalSaveCompleted) return;
+
+  const runId = sessionRunId;
+  finalSaveStarted = true;
+  differenceApi("save", {
+    is_completed: isCompleted ? 1 : 0,
+    time_seconds: gameSession.totalTime,
+    level: gameSession.totalLevels,
+    time_per_level: gameSession.time_per_level,
+    levels_passed: gameSession.levels_passed,
+  })
+    .then(() => {
+      if (runId !== sessionRunId) return;
+      finalSaveCompleted = true;
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      if (runId !== sessionRunId) return;
+      finalSaveStarted = false;
+    });
+}
+
+async function differenceApi(action, payload) {
+  const response = await fetch(`${API_URL}?action=${encodeURIComponent(action)}&_=${Date.now()}`, {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Difference result could not be saved.");
+  }
+
+  return data;
 }
 
 function showOverlay(message, color, canGoNext) {
@@ -351,13 +440,13 @@ function showOverlay(message, color, canGoNext) {
       currentLevel++;
       startLevel.call(this);
     } else {
+      currentLevel = 0;
+      resetGameSession();
       startLevel.call(this);
     }
   });
 }
-document.getElementById('backBtn').addEventListener('click', function() {
-  window.location.href = '../index.php'; 
- });
- document.getElementById('backBtn').addEventListener('click', () => {
-  window.location.href = '../index.php';
+
+document.getElementById("backBtn").addEventListener("click", () => {
+  window.location.href = "../index.php";
 });

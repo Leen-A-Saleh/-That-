@@ -68,17 +68,26 @@ $adminSidebarItems = [
 ?>
 
 <style>
+  /* Keep sidebar fixed and usable across pages with different CSS bundles loaded */
   .sidebar {
+    position: fixed;
+    top: 0;
     height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
+    z-index: 1500;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .sidebar .sidebar-scroll {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -114,6 +123,22 @@ $adminSidebarItems = [
     text-align: center;
     font-size: 18px;
   }
+
+  .sidebar .sidebar-chat-badge.unread-badge {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    background: #30b7c4;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 </style>
 
 <aside class="sidebar">
@@ -126,7 +151,7 @@ $adminSidebarItems = [
     <div class="user-card">
       <div class="user-info">
         <div class="user-greeting">مرحباً،</div>
-        <div class="user-name"><?= e($adminSidebarUserName) ?></div>
+        <div class="user-name" id="sidebarUserName"><?= e($adminSidebarUserName) ?></div>
         <div class="user-role">لوحة تحكم الإدارة</div>
       </div>
     </div>
@@ -137,11 +162,14 @@ $adminSidebarItems = [
           <a href="<?= e($item['href']) ?>">
             <img src="<?= e($item['icon']) ?>" alt="" />
             <?= $item['label'] ?>
+            <?php if ($item['page'] === 'notifications.php'): ?>
+              <span class="unread-badge sidebar-chat-badge global-notif-badge" style="display:none;"></span>
+            <?php endif; ?>
           </a>
-          </li>
-        <?php endforeach; ?>
+        </li>
+      <?php endforeach; ?>
 
-        <li class="logout-item">
+      <li class="logout-item">
           <form method="post" action="../partials/logout-handler.php">
             <?= csrf_input() ?>
             <input type="hidden" name="action" value="logout" />
@@ -158,3 +186,8 @@ $adminSidebarItems = [
 </aside>
 
 <div class="sidebar-overlay"></div>
+
+<!-- نظام التنبيهات الموحّد SweetAlert2 (متاح لكل صفحات لوحة الإدارة) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/That-Copy/Public/js/sweet-alerts.js"></script>
+<script src="/That-Copy/Public/js/realtime-badges.js"></script>

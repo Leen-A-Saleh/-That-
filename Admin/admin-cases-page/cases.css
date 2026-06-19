@@ -279,8 +279,36 @@
   height: 100%;
   border-radius: 100px;
   transition: width 0.5s ease;
-    background: linear-gradient(180deg, #30B7C4 0%, #83C2B9 100%);
+}
 
+.progress-bar-fill.progress-low,
+.modal-bar-fill.progress-low {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+}
+
+.progress-bar-fill.progress-mid,
+.modal-bar-fill.progress-mid {
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+}
+
+.progress-bar-fill.progress-high,
+.modal-bar-fill.progress-high {
+  background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+}
+
+.progress-pct.progress-low,
+.modal-progress-pct.progress-low {
+  color: #dc2626;
+}
+
+.progress-pct.progress-mid,
+.modal-progress-pct.progress-mid {
+  color: #ea580c;
+}
+
+.progress-pct.progress-high,
+.modal-progress-pct.progress-high {
+  color: #16a34a;
 }
 
 .badge {
@@ -696,7 +724,6 @@ a.page-number-btn:hover {
 .modal-progress-pct {
   font-size: 15px;
   font-weight: 700;
-  color: #30b7c4;
   font-family: "Cairo", sans-serif;
 }
 
@@ -711,7 +738,7 @@ a.page-number-btn:hover {
 .modal-bar-fill {
   height: 100%;
   border-radius: 100px;
-  transition: width 0.5s ease;
+  transition: width 0.3s ease;
 }
 
 @media (max-width: 480px) {

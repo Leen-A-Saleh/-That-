@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../Database/db.php';
 require_once __DIR__ . '/../../Database/helpers.php';
 
-// stat cards
+// ─── Stats ────────────────────────────────────────────────────────────────────
 
 function notifications_getStats(): array
 {
@@ -23,12 +23,12 @@ function notifications_getStats(): array
     return [
         'total' => $total,
         'sent' => $total,
-        'scheduled' => 0, // TODO: no scheduling feature yet
+        'scheduled' => 0,
         'recipients' => $recipients,
     ];
 }
 
-// audience counts for the modal buttons
+// ─── Audience ─────────────────────────────────────────────────────────────────
 
 function notifications_getAudienceCounts(): array
 {
@@ -39,7 +39,7 @@ function notifications_getAudienceCounts(): array
     return ['all' => $all, 'clients' => $clients, 'therapists' => $therapists];
 }
 
-// all notifications grouped by broadcast event
+// ─── Fetch ────────────────────────────────────────────────────────────────────
 
 function notifications_getAll(): array
 {
@@ -87,7 +87,7 @@ function notifications_getAll(): array
     }, $rows);
 }
 
-// insert one notification row per target user in a transaction
+// ─── Send ─────────────────────────────────────────────────────────────────────
 
 function notifications_send(string $title, string $body, string $audience): int
 {

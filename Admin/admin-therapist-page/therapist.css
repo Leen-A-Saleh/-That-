@@ -358,17 +358,6 @@ body {
   background: #fee2e2;
 }
 
-.action-btn.more-btn {
-  border: none;
-  background: transparent;
-}
-
-.action-btn.more-btn:hover {
-  background: #f3f4f6;
-  border: none;
-  color: #374151;
-}
-
 .pagination-bar {
   display: flex;
   align-items: center;
@@ -777,66 +766,6 @@ body {
 
 .btn-save:hover {
   background: #259aa5;
-}
-
-.dropdown-menu {
-  position: fixed;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e5e7eb;
-  z-index: 9999;
-  display: none;
-  flex-direction: column;
-  min-width: 160px;
-  overflow: hidden;
-  animation: dropIn 0.15s ease;
-}
-
-@keyframes dropIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-menu.open {
-  display: flex;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
-  font-family: "Cairo", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: right;
-  direction: rtl;
-  transition: background 0.12s;
-}
-
-.dropdown-item:hover {
-  background: #f9fafb;
-}
-.dropdown-item.danger {
-  color: #dc2626;
-}
-.dropdown-item.danger:hover {
-  background: #fee2e2;
-}
-.dropdown-item i {
-  width: 16px;
-  text-align: center;
 }
 
 .view-modal-wrap {

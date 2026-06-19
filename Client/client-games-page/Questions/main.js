@@ -14,9 +14,13 @@ let config = {
 let game = new Phaser.Game(config);
 
 let score = 0;
+let totalScore = 0;
 let questionIndex = 0;
 let selectedQuestions = [];
 let currentLevel = 1;
+let questionSessionId = 0;
+let levelsPassed = { level1: false, level2: false };
+let lastQuestionSave = Promise.resolve();
 
 let currentContainer;
 
@@ -110,8 +114,14 @@ function preload() {
 
 function create() {
   score = 0;
+  totalScore = 0;
   questionIndex = 0;
+  currentLevel = 1;
   selectedQuestions = questionsLevel1;
+  levelsPassed = { level1: false, level2: false };
+  questionSessionId = 0;
+  lastQuestionSave = Promise.resolve();
+  startQuestionSession();
   showImage.call(this);
 }
 
@@ -278,6 +288,15 @@ function showQuestion() {
 function showResult() {
   let scene = this;
   newScreen(scene);
+  const passedLevel = score === selectedQuestions.length;
+  const levelScore = score;
+
+  if (passedLevel) {
+    levelsPassed["level" + currentLevel] = true;
+    totalScore += levelScore;
+  }
+
+  lastQuestionSave = saveQuestionProgress(currentLevel, totalScore, levelsPassed);
 
   let box = scene.add
     .rectangle(500, 325, 700, 400, 0xffffff)
@@ -301,7 +320,7 @@ function showResult() {
 
   currentContainer.add([box, title, resultText]);
 
-  if (score === selectedQuestions.length) {
+  if (passedLevel) {
     let success = scene.add
       .text(500, 380, "🎉 أحسنت", {
         fontSize: "32px",
@@ -322,20 +341,23 @@ function showResult() {
       .text(
         500,
         460,
-        currentLevel === 1 ? " انتقل للمرحلة الثانية" : "إعادة اللعب",
+        currentLevel === 1 ? " انتقل للمرحلة الثانية" : "العودة",
         { fontSize: "28px", color: "#ffffff" },
       )
       .setOrigin(0.5);
 
-    nextBtn.on("pointerdown", function () {
+    nextBtn.on("pointerdown", async function () {
       applause.stop();
 
       if (currentLevel === 1) {
         currentLevel = 2;
         selectedQuestions = questionsLevel2;
       } else {
-        currentLevel = 1;
-        selectedQuestions = questionsLevel1;
+        const completed = await completeQuestionSession();
+        if (completed) {
+          window.location.href = "../index.php";
+        }
+        return;
       }
 
       score = 0;
@@ -365,6 +387,66 @@ function showResult() {
     currentContainer.add([retryBtn, retryText]);
   }
 }
+
+async function startQuestionSession() {
+  try {
+    const data = await questionsApi("start", { total_levels: 2 });
+    questionSessionId = Number(data.session_id || 0);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function saveQuestionProgress(level, points, passed) {
+  if (questionSessionId <= 0) {
+    await startQuestionSession();
+  }
+
+  if (questionSessionId <= 0) return;
+
+  try {
+    await questionsApi("update", {
+      session_id: questionSessionId,
+      level,
+      points,
+      levels_passed: passed,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function completeQuestionSession() {
+  if (questionSessionId <= 0) return false;
+  const sessionId = questionSessionId;
+
+  try {
+    await lastQuestionSave;
+    await questionsApi("complete", { session_id: sessionId });
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+async function questionsApi(action, payload) {
+  const response = await fetch(`questions-database.php?action=${encodeURIComponent(action)}&_=${Date.now()}`, {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Questions progress could not be saved.");
+  }
+
+  return data;
+}
+
 document.getElementById("backBtn").addEventListener("click", () => {
   window.location.href = "../index.php";
 });
